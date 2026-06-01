@@ -20,7 +20,10 @@
       "Bash(git --version)",
       "Bash(gh --version)",
       "Bash(git -C ~/Desktop/SportVeille rev-parse --is-inside-work-tree)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(grep -rl *)",
+      "Bash(python3 -c \"import json;json.load\\(open\\('docs/data/news.json'\\)\\);print\\('news.json OK'\\)\")",
+      "Bash(python3 -c \"import json;json.load\\(open\\('docs/data/history/2026-06-01.json'\\)\\);print\\('history OK'\\)\")"
     ]
   }
 }

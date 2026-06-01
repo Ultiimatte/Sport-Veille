@@ -23,8 +23,8 @@ function setReadIds(set) {
   localStorage.setItem(STORE.read, JSON.stringify([...set]));
 }
 function getSettings() {
-  try { return { theme: "auto", notifyTime: "09:00", ...JSON.parse(localStorage.getItem(STORE.settings) || "{}") }; }
-  catch { return { theme: "auto", notifyTime: "09:00" }; }
+  try { return { theme: "light", notifyTime: "09:00", ...JSON.parse(localStorage.getItem(STORE.settings) || "{}") }; }
+  catch { return { theme: "light", notifyTime: "09:00" }; }
 }
 function saveSettings(s) {
   localStorage.setItem(STORE.settings, JSON.stringify(s));
@@ -58,6 +58,10 @@ function formatTime(iso) {
 }
 function topicInfo(id) {
   return state.topicsMap[id] || { label: "Sport", emoji: "🏆" };
+}
+/** Place les articles deja lus en bas (tri stable, conserve l'ordre par date). */
+function sortReadLast(items, readIds) {
+  return [...items].sort((a, b) => (readIds.has(a.id) ? 1 : 0) - (readIds.has(b.id) ? 1 : 0));
 }
 function escapeHtml(s = "") {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -147,6 +151,7 @@ function renderToday() {
   }
   const updated = state.data?.generatedAt ? ` · mis à jour à ${formatTime(state.data.generatedAt)}` : "";
   const meta = `<p class="list-meta">${items.length} actualité${items.length > 1 ? "s" : ""}${updated}</p>`;
+  items = sortReadLast(items, readIds); // articles lus en bas
   return banner + meta + items.map((i) => cardHtml(i, readIds)).join("");
 }
 
@@ -163,7 +168,7 @@ function renderBySport() {
     .map((id) => {
       const t = topicInfo(id);
       return `<h2 class="section-title">${t.emoji} ${escapeHtml(t.label)} <span class="count">${groups[id].length}</span></h2>` +
-        groups[id].map((i) => cardHtml(i, readIds)).join("");
+        sortReadLast(groups[id], readIds).map((i) => cardHtml(i, readIds)).join("");
     })
     .join("");
 }
@@ -212,31 +217,48 @@ function renderSettings() {
 }
 
 /* ---------- Orchestration ---------- */
-async function render() {
+async function render(opts = {}) {
   const content = document.getElementById("content");
   renderFilters();
   if (state.view === "today") content.innerHTML = renderToday();
   else if (state.view === "bySport") content.innerHTML = renderBySport();
-  else if (state.view === "history") { content.innerHTML = `<div class="loader">…</div>`; content.innerHTML = await renderHistory(); bindHistory(); }
+  else if (state.view === "history") { content.innerHTML = `<div class="loader">…</div>`; content.innerHTML = await renderHistory(); }
   else if (state.view === "settings") { content.innerHTML = renderSettings(); bindSettings(); }
   bindReadButtons();
   bindHistory();
-  window.scrollTo({ top: 0 });
+  bindCardLinks();
+  if (!opts.keepScroll) window.scrollTo({ top: 0 });
+}
+
+/** Marque un article lu/non-lu. forceRead = true/false pour imposer l'état. */
+function toggleRead(id, forceRead) {
+  const set = getReadIds();
+  const willRead = forceRead === undefined ? !set.has(id) : forceRead;
+  willRead ? set.add(id) : set.delete(id);
+  setReadIds(set);
+  return willRead;
 }
 
 function bindReadButtons() {
   document.querySelectorAll("[data-read]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      const id = btn.dataset.read;
-      const set = getReadIds();
-      set.has(id) ? set.delete(id) : set.add(id);
-      setReadIds(set);
-      const card = btn.closest(".card");
-      const read = set.has(id);
-      card?.classList.toggle("is-read", read);
-      btn.classList.toggle("is-read", read);
-      btn.textContent = read ? "✓ Lu" : "Marquer comme lu";
+      e.stopPropagation();
+      toggleRead(btn.dataset.read);
+      render({ keepScroll: true }); // re-trie : les lus passent en bas
+    });
+  });
+}
+
+/** Clic sur un article -> ouvre la source, le marque lu et le renvoie en bas. */
+function bindCardLinks() {
+  document.querySelectorAll(".card__link").forEach((a) => {
+    a.addEventListener("click", () => {
+      const id = a.closest(".card")?.dataset.id;
+      if (!id) return;
+      toggleRead(id, true);
+      // léger délai pour laisser le navigateur ouvrir l'article d'abord
+      setTimeout(() => render({ keepScroll: true }), 60);
     });
   });
 }
@@ -297,24 +319,60 @@ document.querySelectorAll(".tabbar__btn").forEach((btn) => {
   });
 });
 
-document.getElementById("refreshBtn").addEventListener("click", () => init(true));
+// Actualiser : recharge les données mais reste où on est (onglet/filtre/scroll)
+document.getElementById("refreshBtn").addEventListener("click", () => init(false, true));
+
 document.getElementById("settingsBtn").addEventListener("click", () => {
   state.view = "settings";
   setActiveTab(null);
   render();
 });
 
-// Ombre de l'en-tête au défilement
-window.addEventListener("scroll", () => {
-  document.getElementById("appHeader").classList.toggle("is-stuck", window.scrollY > 6);
-}, { passive: true });
+// Logo -> retour à la page d'accueil (récap du jour, filtre Tout)
+document.querySelector(".logo").addEventListener("click", goHome);
+
+function goHome() {
+  if (window.__today) { state.data = window.__today; indexTopics(state.data); setHeaderDate(state.data.date); }
+  state.view = "today";
+  state.filter = "all";
+  setActiveTab("today");
+  render();
+}
+
+// Pastille de date -> calendrier pour choisir un jour de l'historique
+const datePicker = document.getElementById("datePicker");
+document.getElementById("datePill").addEventListener("click", async () => {
+  const idx = await loadHistoryIndex();
+  const dates = idx.map((d) => d.date).sort();
+  datePicker.max = window.__todayDate || dates[dates.length - 1] || "";
+  if (dates.length) datePicker.min = dates[0];
+  datePicker.value = state.data?.date || datePicker.max;
+  try { datePicker.showPicker(); } catch { datePicker.click(); }
+});
+datePicker.addEventListener("change", async () => {
+  const v = datePicker.value;
+  if (!v) return;
+  if (v === window.__todayDate) { goHome(); return; }
+  try {
+    const day = await loadHistoryDay(v);
+    state.data = day;
+    indexTopics(day);
+    state.view = "today";
+    state.filter = "all";
+    setActiveTab("today");
+    setHeaderDate(day.date);
+    render();
+  } catch {
+    alert("Aucun récap disponible pour cette date.");
+  }
+});
 
 function setHeaderDate(dateKey) {
   document.getElementById("datePill").textContent = formatDateLong(dateKey);
 }
 
 /* ---------- Initialisation ---------- */
-async function init(forceTab) {
+async function init(forceTab, keepScroll) {
   applyTheme(getSettings().theme);
   try {
     const data = await loadToday();
@@ -324,7 +382,7 @@ async function init(forceTab) {
     indexTopics(data);
     setHeaderDate(data.date);
     if (forceTab) { state.view = "today"; state.filter = "all"; setActiveTab("today"); }
-    render();
+    render({ keepScroll });
   } catch (err) {
     document.getElementById("content").innerHTML =
       `<div class="empty"><span class="empty__emoji">⚠️</span>Impossible de charger les actualités.<br>${escapeHtml(err.message)}</div>`;

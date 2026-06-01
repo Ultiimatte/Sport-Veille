@@ -3,26 +3,44 @@
    ========================================================================= */
 
 :root {
-  --bg: #f6f4ef;
-  --surface: #ffffff;
-  --surface-2: #ecebe4;
+  --bg: #f9f9f7;            /* arrière-plan de l'app */
+  --surface: #ffffff;       /* cartes d'actualité */
+  --surface-header: #ffffff;/* en-tête + barre du bas */
+  --surface-2: #f0f0ec;     /* pastilles, badges, boutons ronds */
   --text: #1a1a1a;
-  --text-soft: #8d8a82;
-  --border: #e7e4dc;
+  --text-soft: #8a8a86;
+  --border: #ececea;
   --accent: #1a1a1a;        /* noir : éléments actifs */
   --accent-text: #ffffff;
-  --card-shadow: 0 1px 2px rgba(26, 24, 20, 0.04), 0 6px 20px rgba(26, 24, 20, 0.05);
-  --radius: 20px;
+  --card-shadow: 0 1px 2px rgba(26, 24, 20, 0.04), 0 4px 16px rgba(26, 24, 20, 0.04);
+  --radius: 18px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --serif: "Playfair Display", "Georgia", "Times New Roman", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: light;
 }
 
+/* Thème sombre : uniquement si choisi, ou en mode auto sur un appareil sombre */
+.dark-vars,
+html[data-theme="dark"] {
+  --bg: #1a1815;
+  --surface: #232019;
+  --surface-header: #201d18;
+  --surface-2: #2f2b22;
+  --text: #f2efe9;
+  --text-soft: #a8a39a;
+  --border: #36312a;
+  --accent: #f2efe9;
+  --accent-text: #1a1815;
+  --card-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 22px rgba(0,0,0,0.35);
+  color-scheme: dark;
+}
 @media (prefers-color-scheme: dark) {
-  :root {
+  html:not([data-theme]) {
     --bg: #1a1815;
     --surface: #232019;
+    --surface-header: #201d18;
     --surface-2: #2f2b22;
     --text: #f2efe9;
     --text-soft: #a8a39a;
@@ -30,10 +48,9 @@
     --accent: #f2efe9;
     --accent-text: #1a1815;
     --card-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 22px rgba(0,0,0,0.35);
+    color-scheme: dark;
   }
 }
-html[data-theme="light"] { color-scheme: light; }
-html[data-theme="dark"]  { color-scheme: dark; }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -50,22 +67,29 @@ body {
 /* ---------- En-tête ---------- */
 .app-header {
   position: sticky; top: 0; z-index: 10;
-  background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: saturate(160%) blur(14px);
-  -webkit-backdrop-filter: saturate(160%) blur(14px);
-  padding: calc(var(--safe-top) + 14px) 18px 12px;
-  border-bottom: 1px solid transparent;
+  background: var(--surface-header);
+  padding: calc(var(--safe-top) + 13px) 18px 11px;
+  border-bottom: 1px solid var(--border); /* trait fin de séparation */
 }
-.app-header.is-stuck { border-bottom-color: var(--border); }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 
 .logo {
   font-family: var(--serif);
-  font-size: 1.85rem;
+  font-size: 1.45rem;
   line-height: 1;
   letter-spacing: -0.01em;
   white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.logo:active { opacity: 0.6; }
+
+/* Champ date invisible servant à ouvrir le calendrier natif */
+.date-picker-hidden {
+  position: absolute; top: 48px; right: 70px;
+  width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; margin: 0;
+  pointer-events: none;
 }
 .logo b { font-weight: 800; color: var(--text); }
 .logo span { font-weight: 500; color: var(--text-soft); }
@@ -74,10 +98,11 @@ body {
 .date-pill {
   background: var(--surface-2);
   color: var(--text);
-  font-size: 0.82rem; font-weight: 600;
+  font-size: 0.8rem; font-weight: 600;
   padding: 8px 13px; border-radius: 999px;
-  white-space: nowrap;
+  white-space: nowrap; cursor: pointer;
 }
+.date-pill:active { opacity: 0.6; }
 .circle-btn {
   width: 42px; height: 42px; flex: 0 0 auto;
   border: none; border-radius: 50%;
@@ -96,15 +121,15 @@ body {
 .filters::-webkit-scrollbar { display: none; }
 .chip {
   flex: 0 0 auto;
-  display: inline-flex; align-items: center; gap: 7px;
+  display: inline-flex; align-items: center; gap: 6px;
   border: 1px solid var(--border);
-  background: var(--surface); color: var(--text);
-  padding: 9px 16px; border-radius: 999px;
-  font-size: 0.9rem; font-weight: 600; white-space: nowrap;
+  background: var(--bg); color: var(--text);
+  padding: 6px 12px; border-radius: 999px;
+  font-size: 0.8rem; font-weight: 600; white-space: nowrap;
   cursor: pointer; transition: background 0.15s, color 0.15s;
 }
 .chip.is-active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-.chip .emoji { font-size: 1.05rem; }
+.chip .emoji { font-size: 0.92rem; }
 
 /* ---------- Contenu ---------- */
 .content { padding: 16px 18px 28px; max-width: 720px; margin: 0 auto; }
@@ -152,7 +177,11 @@ body {
   font-weight: 700; font-size: 0.72rem;
 }
 .card__title { font-size: 1.06rem; font-weight: 700; margin: 0 0 7px; letter-spacing: -0.01em; line-height: 1.3; }
-.card__summary { font-size: 0.92rem; color: var(--text-soft); margin: 0; }
+.card__summary {
+  font-size: 0.92rem; color: var(--text-soft); margin: 0;
+  display: -webkit-box; -webkit-box-orient: vertical;
+  -webkit-line-clamp: 10; line-clamp: 10; overflow: hidden; /* ~10 lignes max */
+}
 
 .card__footer {
   display: flex; align-items: center; justify-content: space-between;
@@ -210,8 +239,7 @@ body {
 .tabbar {
   position: fixed; bottom: 0; left: 0; right: 0;
   display: flex; justify-content: space-around;
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: var(--surface-header);
   border-top: 1px solid var(--border);
   padding: 9px 0 calc(9px + var(--safe-bottom));
   z-index: 20;

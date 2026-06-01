@@ -1,0 +1,15 @@
+{
+  "name": "Sport Veille",
+  "short_name": "Sport Veille",
+  "description": "Votre récapitulatif quotidien de l'actualité sportive.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f4ef",
+  "theme_color": "#f6f4ef",
+  "lang": "fr",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

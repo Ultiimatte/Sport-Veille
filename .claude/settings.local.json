@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/adrien/**)",
+      "Read(//Users/adrien/.nvm/versions/**)",
+      "Bash(perl -i -pe 's{\\\\.replace\\\\\\(/\\\\[.*?\\\\]/g, \"\"\\\\\\)\\(\\\\s*//.*\\)?$}{.replace\\(/[\\\\\\\\u0300-\\\\\\\\u036f]/g, \"\"\\)} if $. == 50' scripts/build-news.mjs)",
+      "Bash(sed -n '48,52p' scripts/build-news.mjs)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python3 -c 'import json,sys; json.load\\(open\\('\\\\''__TRACKED_VAR__'\\\\''\\)\\); print\\('\\\\''OK  __TRACKED_VAR__'\\\\''\\)')",
+      "Bash(curl -sL -A \"Mozilla/5.0\" --max-time 12 \"https://dwh.lequipe.fr/api/edito/rss?path=/Football/\")",
+      "Bash(sed -n '2,4p')",
+      "Bash(curl -sL -A \"Mozilla/5.0\" --max-time 12 \"https://dwh.lequipe.fr/api/edito/rss?path=/Tennis/\")",
+      "Bash(python3 /tmp/seed_news.py)",
+      "Bash(curl -sL -A \"Mozilla/5.0\" --max-time 12 \"https://feeds.leparisien.fr/leparisien/rss/sports\")",
+      "Bash(ipconfig getifaddr *)",
+      "Bash(echo \"IP locale du Mac : $\\(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('docs/data/news.json'\\)\\); print\\('news.json OK'\\)\")",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(git -C ~/Desktop/SportVeille rev-parse --is-inside-work-tree)"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "sport-veille",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Veille quotidienne sur l'actualite sportive (PWA + generation automatique gratuite).",
+  "scripts": {
+    "build": "node scripts/build-news.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0"
+  }
+}

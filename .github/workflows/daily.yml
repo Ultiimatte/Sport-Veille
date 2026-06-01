@@ -1,0 +1,41 @@
+name: Récap sportif quotidien
+
+# Génère le récapitulatif chaque nuit, AVANT 9h (Paris), puis le publie.
+on:
+  schedule:
+    # 05:30 UTC = 06:30 (hiver) / 07:30 (été) à Paris -> prêt avant 9h.
+    - cron: "30 5 * * *"
+  workflow_dispatch: {} # permet aussi de lancer manuellement depuis GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dépendances
+        run: npm install
+
+      - name: Générer le récap
+        run: npm run build
+
+      - name: Publier les nouvelles données
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "Récap du $(date -u +%Y-%m-%d)"
+            git push
+          fi

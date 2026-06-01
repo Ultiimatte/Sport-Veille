@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SportVeille</title>
+  <meta name="description" content="Votre récap quotidien de l'actualité sportive." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)" />
+
+  <!-- iOS : ajout a l'ecran d'accueil -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="SportVeille" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+
+  <!-- Police serif du logo (avec repli Georgia si hors-ligne) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header" id="appHeader">
+    <div class="topbar">
+      <div class="logo"><b>Sport</b><span>Veille</span></div>
+      <div class="actions">
+        <span class="date-pill" id="datePill">—</span>
+        <button class="circle-btn" id="refreshBtn" title="Rafraîchir" aria-label="Rafraîchir">↻</button>
+        <button class="circle-btn" id="settingsBtn" title="Réglages" aria-label="Réglages">⚙</button>
+      </div>
+    </div>
+    <div id="filters" class="filters" role="tablist"></div>
+  </header>
+
+  <main id="content" class="content">
+    <div class="loader">Chargement des actualités…</div>
+  </main>
+
+  <nav class="tabbar" role="tablist">
+    <button class="tabbar__btn is-active" data-view="today">📰<span>Aujourd'hui</span></button>
+    <button class="tabbar__btn" data-view="bySport">📊<span>Par sport</span></button>
+    <button class="tabbar__btn" data-view="history">🗓️<span>Historique</span></button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>

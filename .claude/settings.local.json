@@ -38,7 +38,12 @@
       "Bash(cp /tmp/icon-square.svg.png docs/apple-touch-icon.png)",
       "Bash(qlmanage -t -s 512 -o /tmp /tmp/icon-square.svg)",
       "Bash(cp /tmp/icon-square.svg.png docs/icon-512.png)",
-      "Bash(python3 -c \"import json;json.load\\(open\\('docs/manifest.webmanifest'\\)\\);print\\('manifest OK'\\)\")"
+      "Bash(python3 -c \"import json;json.load\\(open\\('docs/manifest.webmanifest'\\)\\);print\\('manifest OK'\\)\")",
+      "Bash(python3 -c \"import PIL; print\\('Pillow', PIL.__version__\\)\")",
+      "Bash(sips -g pixelWidth -g pixelHeight logo-sv.jpg)",
+      "Bash(cat)",
+      "Bash(python3 /tmp/make_logo.py)",
+      "Bash(qlmanage -t -s 256 -o /tmp docs/icon.svg)"
     ]
   }
 }

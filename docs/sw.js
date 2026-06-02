@@ -1,6 +1,6 @@
 /* Service worker : "réseau d'abord" pour tout (toujours la dernière version
    quand il y a du réseau), avec le cache comme secours hors-ligne. */
-const CACHE = "sport-veille-v6";
+const CACHE = "sport-veille-v7";
 const SHELL = [
   "./",
   "./index.html",

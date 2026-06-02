@@ -9,7 +9,7 @@ const STORE = {
 
 const state = {
   data: null, // recap du jour
-  view: "today", // today | bySport | history | settings
+  view: "today", // today | history | settings
   filter: "all", // topic id ou "all"
   topicsMap: {}, // id -> {label, emoji}
 };
@@ -59,9 +59,13 @@ function formatTime(iso) {
 function topicInfo(id) {
   return state.topicsMap[id] || { label: "Sport", emoji: "🏆" };
 }
+/** Clé de suivi « lu » = URL de l'article (stable partout, jamais recalculée). */
+function readKey(item) {
+  return item.url || item.id || "";
+}
 /** Place les articles deja lus en bas (tri stable, conserve l'ordre par date). */
 function sortReadLast(items, readIds) {
-  return [...items].sort((a, b) => (readIds.has(a.id) ? 1 : 0) - (readIds.has(b.id) ? 1 : 0));
+  return [...items].sort((a, b) => (readIds.has(readKey(a)) ? 1 : 0) - (readIds.has(readKey(b)) ? 1 : 0));
 }
 function escapeHtml(s = "") {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -96,12 +100,13 @@ function indexTopics(data) {
 /* ---------- Rendu des cartes ---------- */
 function cardHtml(item, readIds) {
   const t = topicInfo(item.topic);
-  const isRead = readIds.has(item.id);
+  const key = escapeHtml(readKey(item));
+  const isRead = readIds.has(readKey(item));
   const img = item.image
     ? `<img class="card__img" src="${escapeHtml(item.image)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'card__img card__img--placeholder',textContent:'${t.emoji}'}))" />`
     : `<div class="card__img card__img--placeholder">${t.emoji}</div>`;
   return `
-    <article class="card ${isRead ? "is-read" : ""}" data-id="${item.id}">
+    <article class="card ${isRead ? "is-read" : ""}" data-key="${key}">
       <a class="card__link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
         ${img}
         <div class="card__body">
@@ -115,7 +120,7 @@ function cardHtml(item, readIds) {
       </a>
       <div class="card__footer">
         <span class="card__source">${escapeHtml(item.source || "")}</span>
-        <button class="read-btn ${isRead ? "is-read" : ""}" data-read="${item.id}">
+        <button class="read-btn ${isRead ? "is-read" : ""}" data-read="${key}">
           ${isRead ? "✓ Lu" : "Marquer comme lu"}
         </button>
       </div>
@@ -153,24 +158,6 @@ function renderToday() {
   const meta = `<p class="list-meta">${items.length} actualité${items.length > 1 ? "s" : ""}${updated}</p>`;
   items = sortReadLast(items, readIds); // articles lus en bas
   return banner + meta + items.map((i) => cardHtml(i, readIds)).join("");
-}
-
-function renderBySport() {
-  const readIds = getReadIds();
-  const items = state.data?.items || [];
-  if (!items.length) return `<div class="empty"><span class="empty__emoji">📭</span>Aucune actualité aujourd'hui.</div>`;
-  const groups = {};
-  for (const i of items) (groups[i.topic] ||= []).push(i);
-  // Ordre : selon la config des topics
-  const order = Object.keys(state.topicsMap);
-  return order
-    .filter((id) => groups[id]?.length)
-    .map((id) => {
-      const t = topicInfo(id);
-      return `<h2 class="section-title">${t.emoji} ${escapeHtml(t.label)} <span class="count">${groups[id].length}</span></h2>` +
-        sortReadLast(groups[id], readIds).map((i) => cardHtml(i, readIds)).join("");
-    })
-    .join("");
 }
 
 async function renderHistory() {
@@ -221,7 +208,6 @@ async function render(opts = {}) {
   const content = document.getElementById("content");
   renderFilters();
   if (state.view === "today") content.innerHTML = renderToday();
-  else if (state.view === "bySport") content.innerHTML = renderBySport();
   else if (state.view === "history") { content.innerHTML = `<div class="loader">…</div>`; content.innerHTML = await renderHistory(); }
   else if (state.view === "settings") { content.innerHTML = renderSettings(); bindSettings(); }
   bindReadButtons();
@@ -254,7 +240,7 @@ function bindReadButtons() {
 function bindCardLinks() {
   document.querySelectorAll(".card__link").forEach((a) => {
     a.addEventListener("click", () => {
-      const id = a.closest(".card")?.dataset.id;
+      const id = a.closest(".card")?.dataset.key;
       if (!id) return;
       toggleRead(id, true);
       // léger délai pour laisser le navigateur ouvrir l'article d'abord
@@ -290,7 +276,7 @@ function bindSettings() {
   });
   document.getElementById("mark-all")?.addEventListener("click", () => {
     const set = getReadIds();
-    (state.data?.items || []).forEach((i) => set.add(i.id));
+    (state.data?.items || []).forEach((i) => set.add(readKey(i)));
     setReadIds(set);
     alert("Toutes les actualités sont marquées comme lues.");
   });

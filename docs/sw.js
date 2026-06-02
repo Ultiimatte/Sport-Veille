@@ -1,5 +1,5 @@
 /* Service worker : coquille d'application en cache, donnees toujours fraiches. */
-const CACHE = "sport-veille-v4";
+const CACHE = "sport-veille-v5";
 const SHELL = [
   "./",
   "./index.html",

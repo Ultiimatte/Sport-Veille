@@ -339,16 +339,19 @@ function goHome() {
   render();
 }
 
-// Pastille de date -> calendrier pour choisir un jour de l'historique
+// Sélecteur de date : le champ <input type="date"> transparent posé sur la
+// pastille ouvre le calendrier natif (fiable sur iOS et ordinateur).
 const datePicker = document.getElementById("datePicker");
-document.getElementById("datePill").addEventListener("click", async () => {
-  const idx = await loadHistoryIndex();
-  const dates = idx.map((d) => d.date).sort();
-  datePicker.max = window.__todayDate || dates[dates.length - 1] || "";
-  if (dates.length) datePicker.min = dates[0];
-  datePicker.value = state.data?.date || datePicker.max;
-  try { datePicker.showPicker(); } catch { datePicker.click(); }
-});
+
+async function refreshDateBounds() {
+  datePicker.max = window.__todayDate || "";
+  try {
+    const idx = await loadHistoryIndex();
+    const dates = idx.map((d) => d.date).sort();
+    if (dates.length) datePicker.min = dates[0];
+  } catch { /* ignore */ }
+}
+
 datePicker.addEventListener("change", async () => {
   const v = datePicker.value;
   if (!v) return;
@@ -369,6 +372,7 @@ datePicker.addEventListener("change", async () => {
 
 function setHeaderDate(dateKey) {
   document.getElementById("datePill").textContent = formatDateLong(dateKey);
+  if (datePicker && dateKey) datePicker.value = dateKey; // ouvre le calendrier sur ce mois
 }
 
 /* ---------- Initialisation ---------- */
@@ -381,6 +385,7 @@ async function init(forceTab, keepScroll) {
     window.__todayDate = data.date;
     indexTopics(data);
     setHeaderDate(data.date);
+    refreshDateBounds();
     if (forceTab) { state.view = "today"; state.filter = "all"; setActiveTab("today"); }
     render({ keepScroll });
   } catch (err) {

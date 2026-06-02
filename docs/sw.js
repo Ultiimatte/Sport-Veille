@@ -1,5 +1,6 @@
-/* Service worker : coquille d'application en cache, donnees toujours fraiches. */
-const CACHE = "sport-veille-v5";
+/* Service worker : "réseau d'abord" pour tout (toujours la dernière version
+   quand il y a du réseau), avec le cache comme secours hors-ligne. */
+const CACHE = "sport-veille-v6";
 const SHELL = [
   "./",
   "./index.html",
@@ -22,20 +23,16 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-  const url = new URL(e.request.url);
-  // Donnees (news.json, historique) : reseau d'abord, cache en secours.
-  if (url.pathname.includes("/data/")) {
-    e.respondWith(
-      fetch(e.request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-          return res;
-        })
-        .catch(() => caches.match(e.request))
-    );
-    return;
-  }
-  // Coquille : cache d'abord.
-  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
+  if (e.request.method !== "GET") return;
+  // Réseau d'abord : on récupère la version fraîche, on met à jour le cache,
+  // et on retombe sur le cache uniquement si le réseau échoue (hors-ligne).
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        return res;
+      })
+      .catch(() => caches.match(e.request).then((r) => r || caches.match("./index.html")))
+  );
 });

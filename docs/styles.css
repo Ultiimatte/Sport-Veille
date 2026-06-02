@@ -54,6 +54,11 @@ html[data-theme="dark"] {
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+html {
+  touch-action: manipulation;   /* empêche le zoom par double-tap */
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   font-family: var(--sans);
@@ -225,7 +230,7 @@ body {
 .setting select, .setting input[type="time"] {
   background: var(--surface-2); color: var(--text);
   border: 1px solid var(--border); border-radius: 10px;
-  padding: 9px 11px; font-size: 0.9rem;
+  padding: 9px 11px; font-size: 16px; /* 16px = pas de zoom auto iOS */
 }
 .btn-block {
   width: 100%; padding: 14px; border-radius: 14px;

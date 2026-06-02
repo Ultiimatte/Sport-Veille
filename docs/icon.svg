@@ -1,10 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2563eb"/>
-      <stop offset="1" stop-color="#1e3a8a"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3c3c3e"/>
+      <stop offset="0.5" stop-color="#262627"/>
+      <stop offset="1" stop-color="#141415"/>
     </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#f3f3f4"/>
+      <stop offset="1" stop-color="#c2c2c5"/>
+    </linearGradient>
+    <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#g)"/>
-  <text x="50%" y="52%" font-size="280" text-anchor="middle" dominant-baseline="central">🏆</text>
+
+  <!-- Fond carré arrondi sombre (charte image 1) -->
+  <rect width="512" height="512" rx="118" fill="url(#bg)"/>
+  <!-- Léger reflet en haut pour l'effet "verre" -->
+  <rect x="26" y="22" width="460" height="210" rx="100" fill="#ffffff" opacity="0.06"/>
+
+  <!-- Monogramme SV : V en arrière, S par-dessus en haut à gauche (disposition image 2) -->
+  <g filter="url(#soft)" font-family="Georgia, 'Times New Roman', serif" font-weight="700">
+    <text x="298" y="384" font-size="372" text-anchor="middle" fill="url(#silver)">V</text>
+    <text x="206" y="306" font-size="276" text-anchor="middle" fill="url(#silver)"
+          stroke="#1d1d1e" stroke-width="11" paint-order="stroke">S</text>
+  </g>
 </svg>

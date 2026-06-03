@@ -70,6 +70,11 @@ function sortReadLast(items, readIds) {
 function escapeHtml(s = "") {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+/** Minuscule sans accents ni ponctuation (pour la recherche). */
+function normalize(s = "") {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
 
 /* ---------- Chargement des donnees ---------- */
 async function loadToday() {
@@ -308,11 +313,71 @@ document.querySelectorAll(".tabbar__btn").forEach((btn) => {
 // Actualiser : recharge les données mais reste où on est (onglet/filtre/scroll)
 document.getElementById("refreshBtn").addEventListener("click", () => init(false, true));
 
-document.getElementById("settingsBtn").addEventListener("click", () => {
-  state.view = "settings";
-  setActiveTab(null);
-  render();
-});
+/* ---------- Recherche façon Spotlight ---------- */
+const searchBtn = document.getElementById("searchBtn");
+const searchOverlay = document.getElementById("searchOverlay");
+const searchInput = document.getElementById("searchInput");
+const searchResults = document.getElementById("searchResults");
+
+function openSearch() {
+  // Cale le voile juste sous l'en-tête et au-dessus de la barre du bas
+  searchOverlay.style.top = document.getElementById("appHeader").offsetHeight + "px";
+  searchOverlay.style.bottom = document.querySelector(".tabbar").offsetHeight + "px";
+  searchOverlay.hidden = false;
+  searchInput.value = "";
+  searchResults.innerHTML = "";
+  searchInput.focus();
+}
+function closeSearch() {
+  searchOverlay.hidden = true;
+  searchInput.blur();
+}
+searchBtn.addEventListener("click", () => (searchOverlay.hidden ? openSearch() : closeSearch()));
+searchInput.addEventListener("input", () => renderSearchResults(searchInput.value));
+// Clic sur le voile gris (hors boîte/résultats) = fermer
+searchOverlay.addEventListener("click", (e) => { if (e.target === searchOverlay) closeSearch(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !searchOverlay.hidden) closeSearch(); });
+
+function renderSearchResults(query) {
+  const items = state.data?.items || [];
+  const words = normalize(query).split(" ").filter(Boolean);
+  if (!words.length) { searchResults.innerHTML = ""; return; }
+  const matches = items.filter((it) => {
+    const hay = normalize(`${it.title || ""} ${it.summary || ""} ${topicInfo(it.topic).label}`);
+    return words.every((w) => hay.includes(w));
+  });
+  if (!matches.length) {
+    searchResults.innerHTML = `<div class="search-empty">Aucun article trouvé</div>`;
+    return;
+  }
+  searchResults.innerHTML = matches.map((it) => `
+    <div class="search-result" data-key="${escapeHtml(readKey(it))}">
+      <div class="search-result__sport">${escapeHtml(topicInfo(it.topic).label)}</div>
+      <div class="search-result__title">${escapeHtml(it.title)}</div>
+    </div>`).join("");
+  searchResults.querySelectorAll(".search-result").forEach((el) =>
+    el.addEventListener("click", () => openArticle(el.dataset.key))
+  );
+}
+
+/** Ferme la recherche et fait défiler jusqu'à l'article (comme un Cmd+F). */
+async function openArticle(key) {
+  closeSearch();
+  state.view = "today";
+  state.filter = "all";
+  setActiveTab("today");
+  await render({ keepScroll: true });
+  requestAnimationFrame(() => {
+    for (const c of document.querySelectorAll(".card")) {
+      if (c.dataset.key === key) {
+        c.scrollIntoView({ behavior: "smooth", block: "center" });
+        c.classList.add("is-highlight");
+        setTimeout(() => c.classList.remove("is-highlight"), 1800);
+        break;
+      }
+    }
+  });
+}
 
 // Logo -> retour à la page d'accueil (récap du jour, filtre Tout)
 document.querySelector(".logo").addEventListener("click", goHome);

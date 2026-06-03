@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T14:56:52.392Z",
+  "generatedAt": "2026-06-03T15:31:35.465Z",
   "date": "2026-06-03",
   "categories": [
     {
@@ -79,7 +79,7 @@
       ]
     }
   ],
-  "count": 59,
+  "count": 57,
   "items": [
     {
       "id": "wut5i7",
@@ -124,17 +124,6 @@
       "url": "https://www.lequipe.fr/Tennis/Actualites/Jakub-mensik-apres-sa-victoire-contre-joao-fonseca-en-quarts-de-finale-de-roland-garros-j-etais-dans-la-zone/1681319",
       "image": "https://medias.lequipe.fr/img-photo-jpg/jakub-mensik-f-faugere-l-equipe/1500000002482171/0:0,2000:1000-828-552-75/13ca3.jpg",
       "publishedAt": "2026-06-02T22:46:58.000Z"
-    },
-    {
-      "id": "ucrr77",
-      "title": "Alerte info : 3 personnes sont mortes à Paris en marge des célébrations de la victoire du PSG",
-      "summary": "Deux accidents, dont un mortel, ont eu lieu samedi sur le boulevard périphérique parisien, après la victoire du PSG en Ligue des champions. Par ailleurs, les corps de deux hommes ont été repêchés dans la Seine, a annoncé le Parquet.",
-      "category": "sport",
-      "topic": "football",
-      "source": "France Info",
-      "url": "https://www.franceinfo.fr/sports/foot/ligue-des-champions/finale/alerte-info-3-personnes-sont-mortes-a-paris-en-marge-des-celebrations-de-la-victoire-du-psg_8041958.html",
-      "image": "https://www.franceinfo.fr/pictures/GwjAVG_Ia6pGWoBwI04kYVwJX_0/0x0:1080x1920/fit-in/432x243/filters:upscale():fill(black):format(jpg)/2026/06/02/6a1f49ef93214074132995.jpg",
-      "publishedAt": "2026-06-02T21:24:24.000Z"
     },
     {
       "id": "1fsv1ii",
@@ -465,17 +454,6 @@
       "url": "https://www.lequipe.fr/Basket/Actualites/Finale-de-la-nba-cup-champagnie-superstar-fin-de-serie-qu-ont-donne-les-trois-spurs-knicks-cette-saison/1681115",
       "image": "https://medias.lequipe.fr/img-photo-png/-/1500000000833469/0-828-552-75/0cb67.png",
       "publishedAt": "2026-06-02T16:03:00.000Z"
-    },
-    {
-      "id": "7ku3hu",
-      "title": "Taïwan, l'île aux 268 sommets à plus de 3 000 m",
-      "summary": "",
-      "category": "sport",
-      "topic": "cyclisme",
-      "source": "L'Equipe",
-      "url": "https://www.lequipe.fr/Cyclisme-sur-route/Article/Taiwan-a-la-decouverte-de-l-ile-aux-268-sommets-qui-depassent-les-3-000-m-d-altitude/1680810",
-      "image": "https://medias.lequipe.fr/img-photo-png/-/1500000000833469/0-828-552-75/0cb67.png",
-      "publishedAt": "2026-06-02T16:00:00.000Z"
     },
     {
       "id": "cdsmpg",

@@ -4,8 +4,8 @@
     {
       "name": "site",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["/Users/adrien/Desktop/SportVeille/scripts/preview.py"],
-      "port": 8080
+      "runtimeArgs": ["/tmp/sv-server.py"],
+      "port": 8097
     }
   ]
 }

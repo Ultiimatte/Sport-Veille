@@ -31,6 +31,15 @@ jobs:
       - name: Générer le récap
         run: npm run build
 
+      - name: Notification du matin (push)
+        env:
+          PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+        run: |
+          pip install --quiet pywebpush
+          python3 scripts/send-push.py
+
       - name: Publier les nouvelles données
         run: |
           git config user.name "github-actions[bot]"

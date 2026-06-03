@@ -202,13 +202,21 @@ function renderSettings() {
       </div>
       <input type="time" id="set-time" value="${s.notifyTime}" />
     </div>
-    <button class="btn-block" id="mark-all">✓ Tout marquer comme lu</button>
-    <button class="btn-block" id="clear-read" style="margin-top:10px;">↺ Réinitialiser les "lus"</button>
-    <div class="info-box">
-      <strong>Notifications à 9h</strong> : non activées dans cette version. Le récap est
-      simplement prêt chaque matin quand vous ouvrez l'app. Pour ne pas l'oublier, ajoutez
-      l'app à votre écran d'accueil (Safari → Partager → « Sur l'écran d'accueil »).
-    </div>`;
+    <div class="setting">
+      <div>
+        <div class="setting__label">Notifications du matin</div>
+        <div class="setting__hint">Un rappel chaque matin quand le récap est prêt</div>
+      </div>
+      <button class="read-btn" id="enable-notif">Activer</button>
+    </div>
+    <div id="notif-sub" class="info-box" style="display:none;">
+      <strong>Dernière étape (à faire une fois)</strong> : copie le texte ci-dessous et
+      colle-le dans le secret GitHub <code>PUSH_SUBSCRIPTION</code> (je t'explique comment).
+      <textarea id="sub-json" readonly style="width:100%;height:90px;margin-top:8px;font-size:11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:8px;"></textarea>
+      <button class="btn-block" id="copy-sub" style="margin-top:8px;">📋 Copier l'abonnement</button>
+    </div>
+    <button class="btn-block" id="mark-all" style="margin-top:12px;">✓ Tout marquer comme lu</button>
+    <button class="btn-block" id="clear-read" style="margin-top:10px;">↺ Réinitialiser les "lus"</button>`;
 }
 
 /* ---------- Orchestration ---------- */
@@ -292,6 +300,45 @@ function bindSettings() {
     setReadIds(new Set());
     alert("Statut « lu » réinitialisé.");
   });
+  document.getElementById("enable-notif")?.addEventListener("click", enableNotifications);
+  document.getElementById("copy-sub")?.addEventListener("click", () => {
+    const ta = document.getElementById("sub-json");
+    navigator.clipboard?.writeText(ta.value).then(
+      () => alert("Abonnement copié ! Colle-le dans le secret GitHub PUSH_SUBSCRIPTION."),
+      () => { ta.select(); document.execCommand("copy"); }
+    );
+  });
+}
+
+/* ---------- Notifications push ---------- */
+const VAPID_PUBLIC = "BFSiHJfGBBviJ6nUCAbdH6vUC88q-7al-YlxQmLFXUde3Brl-GSLZO6Mju6OF9aKieDzrCJHNDICq8u1Vv4rCWg";
+
+function urlBase64ToUint8Array(base64) {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(b64);
+  return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+async function enableNotifications() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    alert("Notifications non supportées ici.\nIl faut iOS 16.4+ ET l'app ajoutée à l'écran d'accueil (pas dans Safari).");
+    return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { alert("Permission refusée. Tu peux la réactiver dans Réglages iOS → SportVeille → Notifications."); return; }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
+    });
+    const box = document.getElementById("notif-sub");
+    document.getElementById("sub-json").value = JSON.stringify(sub.toJSON());
+    box.style.display = "block";
+  } catch (e) {
+    alert("Impossible d'activer les notifications : " + e.message);
+  }
 }
 
 function setActiveTab(view) {

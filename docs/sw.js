@@ -1,6 +1,6 @@
 /* Service worker : "réseau d'abord" pour tout (toujours la dernière version
    quand il y a du réseau), avec le cache comme secours hors-ligne. */
-const CACHE = "sport-veille-v11";
+const CACHE = "sport-veille-v12";
 const SHELL = [
   "./",
   "./index.html",
@@ -34,5 +34,31 @@ self.addEventListener("fetch", (e) => {
         return res;
       })
       .catch(() => caches.match(e.request).then((r) => r || caches.match("./index.html")))
+  );
+});
+
+/* ---------- Notifications push ---------- */
+self.addEventListener("push", (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch { data = {}; }
+  const title = data.title || "SportVeille";
+  const body = data.body || "Le récap du jour est prêt.";
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "./apple-touch-icon.png",
+      badge: "./apple-touch-icon.png",
+      data: { url: "./index.html" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ("focus" in c) return c.focus(); }
+      if (self.clients.openWindow) return self.clients.openWindow("./index.html");
+    })
   );
 });

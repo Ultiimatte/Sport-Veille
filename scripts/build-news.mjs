@@ -136,11 +136,30 @@ function titleSimilarity(a, b) {
   return inter / (sa.size + sb.size - inter);
 }
 
-function isFresh(dateStr, now, windowHours) {
-  if (!dateStr) return false;
-  const t = new Date(dateStr).getTime();
-  if (Number.isNaN(t)) return false;
-  return now - t <= windowHours * 3600 * 1000 && t <= now + 3600 * 1000;
+/** Decalage (ms) du fuseau `tz` par rapport a UTC a l'instant `date`. */
+function tzOffsetMs(date, tz) {
+  const dtf = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, hour12: false,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  });
+  const p = {};
+  for (const part of dtf.formatToParts(date)) p[part.type] = part.value;
+  const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+  return asUTC - date.getTime();
+}
+
+/**
+ * Fenetre de l'edition du jour : [J-1 cutoff, J cutoff[ en heure locale `tz`.
+ * J = date locale au moment de la generation. Renvoie des timestamps ms.
+ */
+function editionWindow(now, tz, cutoffHHMM) {
+  const dateKey = localDateKey(now, tz); // "YYYY-MM-DD" local (aujourd'hui)
+  const [hh, mm] = cutoffHHMM.split(":").map(Number);
+  const [Y, M, D] = dateKey.split("-").map(Number);
+  const approx = Date.UTC(Y, M - 1, D, hh, mm, 0); // heure murale traitee comme UTC
+  const end = approx - tzOffsetMs(new Date(approx), tz); // instant UTC reel
+  return { start: end - 24 * 3600 * 1000, end, dateKey };
 }
 
 /** Date "du jour" dans le fuseau configure (YYYY-MM-DD). */
@@ -251,9 +270,14 @@ async function main() {
 
   console.log(`\nTotal brut : ${all.length} articles`);
 
-  // Filtrage fraicheur
-  all = all.filter((it) => isFresh(it.publishedAt, now, settings.windowHours));
-  console.log(`Apres filtre 24h : ${all.length}`);
+  // Fenetre de l'edition : [hier cutoff, aujourd'hui cutoff[ (heure de Paris)
+  const win = editionWindow(new Date(now), settings.timeZone, settings.editionCutoff);
+  console.log(`Edition ${win.dateKey} : ${new Date(win.start).toISOString()} -> ${new Date(win.end).toISOString()}`);
+  all = all.filter((it) => {
+    const t = new Date(it.publishedAt).getTime();
+    return !Number.isNaN(t) && t >= win.start && t < win.end;
+  });
+  console.log(`Apres fenetre d'edition : ${all.length}`);
 
   // Dedoublonnage
   all = dedupe(all);
@@ -277,7 +301,7 @@ async function main() {
 
   // all = await enrichWithAI(all); // <- Phase 2
 
-  const dateKey = localDateKey(new Date(), settings.timeZone);
+  const dateKey = win.dateKey;
   const payload = {
     generatedAt: new Date().toISOString(),
     date: dateKey,

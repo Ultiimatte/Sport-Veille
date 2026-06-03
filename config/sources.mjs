@@ -102,8 +102,8 @@ export const categories = [
 // Parametres globaux de generation
 export const settings = {
   // Fenetre de recuperation : on garde les articles publies dans les N
-  // dernieres heures (un peu plus de 24h pour absorber les decalages de nuit).
-  windowHours: 36,
+  // dernieres heures. 24h = "ce qui s'est passe depuis hier matin" (capte la nuit).
+  windowHours: 24,
   // Nombre maximum d'articles conserves par jour (apres tri).
   maxItemsPerDay: 80,
   // Plafond par sport, pour preserver la diversite (eviter que le football

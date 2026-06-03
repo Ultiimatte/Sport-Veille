@@ -14,7 +14,7 @@
 // =============================================================================
 
 import Parser from "rss-parser";
-import { writeFile, mkdir, readFile, readdir } from "node:fs/promises";
+import { writeFile, mkdir, readFile, readdir, unlink } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { categories, settings } from "../config/sources.mjs";
@@ -294,11 +294,20 @@ async function main() {
   console.log(`\n✅ Genere : ${all.length} articles pour le ${dateKey}`);
 }
 
-/** Met a jour l'index de l'historique (et purge les vieux jours). */
+/** Met a jour l'index de l'historique ET supprime les jours de plus de 30 jours. */
 async function updateHistoryIndex() {
   const files = (await readdir(HISTORY_DIR)).filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f));
-  files.sort().reverse();
+  files.sort().reverse(); // du plus recent au plus ancien
   const keep = files.slice(0, settings.historyDays);
+  const drop = files.slice(settings.historyDays);
+
+  // Suppression des fichiers trop vieux (> historyDays jours)
+  for (const f of drop) {
+    try {
+      await unlink(path.join(HISTORY_DIR, f));
+      console.log(`  🗑️  supprimé : ${f}`);
+    } catch { /* ignore */ }
+  }
 
   const index = [];
   for (const f of keep) {

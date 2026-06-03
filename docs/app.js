@@ -36,13 +36,15 @@ function applyTheme(theme) {
 }
 
 /* ---------- Utilitaires d'affichage ---------- */
-function timeAgo(iso) {
+/** Date + heure de publication, ex. « 2 juin · 23h45 ». */
+function formatDateTime(iso) {
   if (!iso) return "";
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return "à l'instant";
-  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
-  return `il y a ${Math.floor(diff / 86400)} j`;
+  try {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+    const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }).replace(":", "h");
+    return `${date} · ${time}`;
+  } catch { return ""; }
 }
 function formatDateLong(key) {
   try {
@@ -117,7 +119,7 @@ function cardHtml(item, readIds) {
         <div class="card__body">
           <div class="card__meta">
             <span class="badge">${t.emoji} ${escapeHtml(t.label)}</span>
-            <span>${timeAgo(item.publishedAt)}</span>
+            <span>${formatDateTime(item.publishedAt)}</span>
           </div>
           <h3 class="card__title">${escapeHtml(item.title)}</h3>
           <p class="card__summary">${escapeHtml(item.summary || "")}</p>
@@ -160,7 +162,8 @@ function renderToday() {
     return banner + `<div class="empty"><span class="empty__emoji">📭</span>Aucune actualité pour ce filtre.</div>`;
   }
   const updated = state.data?.generatedAt ? ` · mis à jour à ${formatTime(state.data.generatedAt)}` : "";
-  const meta = `<p class="list-meta">${items.length} actualité${items.length > 1 ? "s" : ""}${updated}</p>`;
+  const unread = items.filter((i) => !readIds.has(readKey(i))).length;
+  const meta = `<p class="list-meta">${items.length} actualité${items.length > 1 ? "s" : ""} <strong>(${unread} non lu${unread > 1 ? "s" : ""})</strong>${updated}</p>`;
   items = sortReadLast(items, readIds); // articles lus en bas
   return banner + meta + items.map((i) => cardHtml(i, readIds)).join("");
 }

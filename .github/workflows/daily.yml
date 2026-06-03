@@ -3,12 +3,11 @@ name: Récap sportif quotidien
 # Génère le récapitulatif chaque nuit, AVANT 9h (Paris), puis le publie.
 on:
   schedule:
-    # GitHub retarde/saute souvent les tâches planifiées : on prévoit plusieurs
-    # créneaux le matin (heures UTC) pour qu'au moins un passe avant 9h Paris.
-    # 04:30 UTC ≈ 06:30 Paris · 05:30 ≈ 07:30 · 06:30 ≈ 08:30 (heure d'été).
+    # Filet de secours (le déclencheur principal est cron-job.org à 6h30 Paris).
+    # Heures UTC, placées avant 7h Paris. Été (UTC+2) : 05:30 / 06:00 / 06:30 Paris.
+    - cron: "30 3 * * *"
+    - cron: "0 4 * * *"
     - cron: "30 4 * * *"
-    - cron: "30 5 * * *"
-    - cron: "30 6 * * *"
   workflow_dispatch: {} # permet aussi de lancer manuellement depuis GitHub
 
 permissions:

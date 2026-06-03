@@ -1,6 +1,6 @@
 /* Service worker : "réseau d'abord" pour tout (toujours la dernière version
    quand il y a du réseau), avec le cache comme secours hors-ligne. */
-const CACHE = "sport-veille-v12";
+const CACHE = "sport-veille-v13";
 const SHELL = [
   "./",
   "./index.html",
@@ -41,16 +41,13 @@ self.addEventListener("fetch", (e) => {
 self.addEventListener("push", (e) => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch { data = {}; }
-  const title = data.title || "SportVeille";
-  const body = data.body || "Le récap du jour est prêt.";
-  e.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon: "./apple-touch-icon.png",
-      badge: "./apple-touch-icon.png",
-      data: { url: "./index.html" },
-    })
-  );
+  const opts = {
+    icon: "./apple-touch-icon.png",
+    badge: "./apple-touch-icon.png",
+    data: { url: "./index.html" },
+  };
+  if (data.body) opts.body = data.body; // pas de 2e ligne si non fournie
+  e.waitUntil(self.registration.showNotification(data.title || "SportVeille", opts));
 });
 
 self.addEventListener("notificationclick", (e) => {

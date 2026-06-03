@@ -11,7 +11,18 @@ MARKER = os.path.join(DATA, ".last-notified")
 TEXTS = [
     "Ce qu'il ne fallait pas manquer hier.",
     "Résultats, exploits, transferts : le résumé d'hier.",
+    "Les infos sportives qui vont faire parler aujourd'hui",
+    "Toute l'actualité sportive d'hier en un coup d'œil",
+    "Le terrain a parlé hier. Voici ce qu'il faut retenir",
+    "Soyez au courant avant tout le monde",
+    "Ça a bougé dans le monde du sport hier",
+    "Votre récap sport est prêt",
+    "L'essentiel des dernières 24h sportives.",
+    "Tout le sport, sans perte de temps",
+    "Retour sur une journée chargée dans le sport",
 ]
+# Emojis ajoutés au hasard à la fin du texte (indépendamment du texte choisi).
+EMOJIS = ["📣", "🏟️", "⚽", "🏀", "🎾", "🏉", "🏎️", "📰", "⏱️", "🔥", "📲"]
 
 sub = os.environ.get("PUSH_SUBSCRIPTION", "").strip()
 priv = os.environ.get("VAPID_PRIVATE_KEY", "").strip()
@@ -35,7 +46,7 @@ if edition and edition == last:
 from pywebpush import webpush, WebPushException
 from py_vapid import Vapid01
 
-payload = json.dumps({"title": "SportVeille", "body": random.choice(TEXTS)})
+payload = json.dumps({"title": f"{random.choice(TEXTS)} {random.choice(EMOJIS)}"})
 try:
     webpush(
         subscription_info=json.loads(sub),

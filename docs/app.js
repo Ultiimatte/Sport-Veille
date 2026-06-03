@@ -300,6 +300,7 @@ function setActiveTab(view) {
 /* ---------- Navigation par onglets ---------- */
 document.querySelectorAll(".tabbar__btn").forEach((btn) => {
   btn.addEventListener("click", async () => {
+    closeSearch(); // ferme la recherche si on change d'onglet
     state.view = btn.dataset.view;
     setActiveTab(state.view);
     // Revenir au recap du jour si on quitte un jour d'historique
@@ -319,6 +320,29 @@ const searchOverlay = document.getElementById("searchOverlay");
 const searchInput = document.getElementById("searchInput");
 const searchResults = document.getElementById("searchResults");
 
+let searchCorpus = null; // tous les articles de tous les jours [{date, item}]
+
+/** Construit (une fois) l'index de recherche sur TOUS les jours d'historique. */
+async function buildCorpus() {
+  if (searchCorpus) return searchCorpus;
+  const idx = await loadHistoryIndex(); // déjà trié du plus récent au plus ancien
+  const days = await Promise.all(
+    idx.map((d) => loadHistoryDay(d.date).then((day) => ({ date: d.date, items: day.items || [] })).catch(() => null))
+  );
+  const seen = new Set();
+  const corpus = [];
+  for (const day of days) {
+    if (!day) continue;
+    for (const it of day.items) {
+      if (seen.has(it.url)) continue; // garde la 1re occurrence (jour le plus récent)
+      seen.add(it.url);
+      corpus.push({ date: day.date, item: it });
+    }
+  }
+  searchCorpus = corpus;
+  return corpus;
+}
+
 function openSearch() {
   // Cale le voile juste sous l'en-tête et au-dessus de la barre du bas
   searchOverlay.style.top = document.getElementById("appHeader").offsetHeight + "px";
@@ -326,43 +350,59 @@ function openSearch() {
   searchOverlay.hidden = false;
   searchInput.value = "";
   searchResults.innerHTML = "";
+  document.body.classList.add("search-open"); // fige le fond
   searchInput.focus();
+  buildCorpus().then(() => renderSearchResults(searchInput.value)); // précharge tous les jours
 }
 function closeSearch() {
   searchOverlay.hidden = true;
+  document.body.classList.remove("search-open");
   searchInput.blur();
 }
 searchBtn.addEventListener("click", () => (searchOverlay.hidden ? openSearch() : closeSearch()));
 searchInput.addEventListener("input", () => renderSearchResults(searchInput.value));
-// Clic sur le voile gris (hors boîte/résultats) = fermer
-searchOverlay.addEventListener("click", (e) => { if (e.target === searchOverlay) closeSearch(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !searchOverlay.hidden) closeSearch(); });
+// Tap n'importe où en dehors de la boîte (voile, en-tête, onglets…) = fermer
+document.addEventListener("click", (e) => {
+  if (searchOverlay.hidden) return;
+  if (e.target.closest("#searchBtn") || e.target.closest(".search-box") || e.target.closest(".search-result")) return;
+  closeSearch();
+});
 
 function renderSearchResults(query) {
-  const items = state.data?.items || [];
   const words = normalize(query).split(" ").filter(Boolean);
   if (!words.length) { searchResults.innerHTML = ""; return; }
-  const matches = items.filter((it) => {
-    const hay = normalize(`${it.title || ""} ${it.summary || ""} ${topicInfo(it.topic).label}`);
+  if (!searchCorpus) { searchResults.innerHTML = `<div class="search-empty">Chargement…</div>`; return; }
+  const matches = searchCorpus.filter(({ item }) => {
+    const hay = normalize(`${item.title || ""} ${item.summary || ""} ${topicInfo(item.topic).label}`);
     return words.every((w) => hay.includes(w));
   });
   if (!matches.length) {
     searchResults.innerHTML = `<div class="search-empty">Aucun article trouvé</div>`;
     return;
   }
-  searchResults.innerHTML = matches.map((it) => `
-    <div class="search-result" data-key="${escapeHtml(readKey(it))}">
-      <div class="search-result__sport">${escapeHtml(topicInfo(it.topic).label)}</div>
-      <div class="search-result__title">${escapeHtml(it.title)}</div>
+  searchResults.innerHTML = matches.map(({ item, date }) => `
+    <div class="search-result" data-key="${escapeHtml(readKey(item))}" data-date="${escapeHtml(date)}">
+      <div class="search-result__sport">${escapeHtml(topicInfo(item.topic).label)}</div>
+      <div class="search-result__title">${escapeHtml(item.title)}</div>
     </div>`).join("");
   searchResults.querySelectorAll(".search-result").forEach((el) =>
-    el.addEventListener("click", () => openArticle(el.dataset.key))
+    el.addEventListener("click", () => openArticle(el.dataset.key, el.dataset.date))
   );
 }
 
-/** Ferme la recherche et fait défiler jusqu'à l'article (comme un Cmd+F). */
-async function openArticle(key) {
+/** Ferme la recherche, charge le bon jour si besoin, puis défile jusqu'à l'article. */
+async function openArticle(key, date) {
   closeSearch();
+  // Charge le jour de l'article s'il n'est pas celui affiché
+  if (date && date !== state.data?.date) {
+    try {
+      const day = date === window.__todayDate ? window.__today : await loadHistoryDay(date);
+      state.data = day;
+      indexTopics(day);
+      setHeaderDate(day.date);
+    } catch { /* ignore */ }
+  }
   state.view = "today";
   state.filter = "all";
   setActiveTab("today");
@@ -404,6 +444,7 @@ async function refreshDateBounds() {
 }
 
 datePicker.addEventListener("change", async () => {
+  datePicker.blur(); // ferme le calendrier natif après le choix de la date
   const v = datePicker.value;
   if (!v) return;
   if (v === window.__todayDate) { goHome(); return; }
@@ -434,6 +475,7 @@ async function init(forceTab, keepScroll) {
     state.data = data;
     window.__today = data;
     window.__todayDate = data.date;
+    searchCorpus = null; // l'index de recherche sera reconstruit (données fraîches)
     indexTopics(data);
     setHeaderDate(data.date);
     refreshDateBounds();

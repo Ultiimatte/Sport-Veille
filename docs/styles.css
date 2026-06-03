@@ -279,6 +279,9 @@ body {
   padding: 14px 16px 0;
 }
 .search-overlay[hidden] { display: none; }
+.search-overlay { touch-action: none; }       /* bloque le défilement du fond */
+.flip-x { transform: scaleX(-1); }             /* loupe miroir (pointe à droite) */
+body.search-open { overflow: hidden; }         /* fige les actus en arrière-plan */
 
 .search-box {
   display: flex; align-items: center; gap: 10px;
@@ -296,6 +299,7 @@ body {
 .search-results {
   width: 100%; max-width: 600px; margin: 12px auto 0;
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;            /* défilement vertical autorisé dans la liste */
   padding-bottom: 16px;
 }
 .search-result {

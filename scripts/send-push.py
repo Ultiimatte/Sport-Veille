@@ -39,14 +39,12 @@ from pywebpush import webpush, WebPushException
 from py_vapid import Vapid01
 
 
-# Titre = caractère invisible (espace de largeur nulle) : iOS n'affiche pas
-# "SportVeille" comme titre, et ne reste que l'entête système "from SportVeille".
-INVISIBLE_TITLE = "\u200b"
+NOTIF_TITLE = "SportVeille"
 
 def send(body):
     webpush(
         subscription_info=json.loads(sub),
-        data=json.dumps({"title": INVISIBLE_TITLE, "body": body}),
+        data=json.dumps({"title": NOTIF_TITLE, "body": body}),
         vapid_private_key=Vapid01.from_raw(private_raw=priv.encode()),
         vapid_claims={"sub": subject},
     )

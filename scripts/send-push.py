@@ -17,7 +17,7 @@ TEXTS = [
     "Les actus d'hier en un coup d'œil",
     "Que s'est-il passé hier ?",
     "Soyez au courant avant tout le monde",
-    "Ça a bougé dans le monde du sport hier",
+    "Ça a bougé dans le monde du sport !",
     "Votre récap sport est prêt",
     "L'essentiel des dernières 24h",
     "Tout le sport, sans perte de temps",
@@ -39,10 +39,14 @@ from pywebpush import webpush, WebPushException
 from py_vapid import Vapid01
 
 
+# Titre = caractère invisible (espace de largeur nulle) : iOS n'affiche pas
+# "SportVeille" comme titre, et ne reste que l'entête système "from SportVeille".
+INVISIBLE_TITLE = "\u200b"
+
 def send(body):
     webpush(
         subscription_info=json.loads(sub),
-        data=json.dumps({"title": "", "body": body}),
+        data=json.dumps({"title": INVISIBLE_TITLE, "body": body}),
         vapid_private_key=Vapid01.from_raw(private_raw=priv.encode()),
         vapid_claims={"sub": subject},
     )

@@ -325,6 +325,32 @@ async function aiSummarize5(articleText) {
   return callGemini(prompt);
 }
 
+/**
+ * Fusionne l'edition deja generee (meme jour) avec les nouveaux articles, pour
+ * NE PAS perdre ceux qui ont defile hors des flux RSS quand on regenere plus tard
+ * dans la journee. On ne garde que ceux qui sont dans la fenetre de l'edition.
+ */
+async function mergePreviousEdition(items, win) {
+  try {
+    const prev = JSON.parse(await readFile(path.join(DATA_DIR, "news.json"), "utf8"));
+    if (prev.date !== win.dateKey) return items; // edition d'un autre jour -> on ne fusionne pas
+    const urls = new Set(items.map((i) => i.url));
+    let kept = 0;
+    for (const it of prev.items || []) {
+      const t = new Date(it.publishedAt).getTime();
+      if (!Number.isNaN(t) && t >= win.start && t < win.end && !urls.has(it.url)) {
+        items.push(it);
+        urls.add(it.url);
+        kept++;
+      }
+    }
+    console.log(`Fusion edition precedente : +${kept} articles conservés.`);
+    return dedupe(items);
+  } catch {
+    return items;
+  }
+}
+
 /** Cache (news.json precedent) : reutilise summary + detail deja calcules. */
 async function loadCache() {
   const map = {};
@@ -405,6 +431,10 @@ async function main() {
   // Dedoublonnage
   all = dedupe(all);
   console.log(`Apres dedoublonnage : ${all.length}`);
+
+  // Fusion avec l'édition déjà générée aujourd'hui (anti-perte si run tardif)
+  all = await mergePreviousEdition(all, win);
+  console.log(`Apres fusion : ${all.length}`);
 
   // Tri par date (recent -> ancien)
   all.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));

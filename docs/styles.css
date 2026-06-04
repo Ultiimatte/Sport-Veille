@@ -358,12 +358,14 @@ body.is-article { padding-bottom: 0; }
   font-size: 1.5rem; font-weight: 800; line-height: 1.25;
   letter-spacing: -0.01em; margin: 0 0 14px;
 }
-.article__summary {
-  font-size: 1.02rem; line-height: 1.6; color: var(--text); margin: 0 0 18px;
-  white-space: pre-line;
+.article__text { margin: 0 0 8px; }
+.article__para {
+  font-size: 1.02rem; line-height: 1.6; color: var(--text);
+  margin: 0 0 1.5em;                 /* espace généreux entre paragraphes */
   text-align: justify;
   hyphens: auto; -webkit-hyphens: auto;
 }
+.article__para:last-child { margin-bottom: 18px; }
 .article__ai-note {
   font-size: 0.76rem; color: var(--text-soft); margin: 0 0 20px;
   font-style: italic;

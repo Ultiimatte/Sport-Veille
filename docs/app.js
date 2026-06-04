@@ -234,6 +234,9 @@ function renderArticle(item) {
     ? `<img class="article__img" src="${escapeHtml(item.image)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'article__img article__img--placeholder',textContent:'${t.emoji}'}))" />`
     : `<div class="article__img article__img--placeholder">${t.emoji}</div>`;
   const src = escapeHtml(item.source || "le site");
+  const paras = (item.detail || item.summary || "")
+    .split(/\n+/).map((p) => p.trim()).filter(Boolean)
+    .map((p) => `<p class="article__para">${escapeHtml(p)}</p>`).join("");
   return `
     <article class="article">
       ${img}
@@ -243,7 +246,7 @@ function renderArticle(item) {
           <span>${formatDateTime(item.publishedAt)}</span>
         </div>
         <h1 class="article__title">${escapeHtml(item.title)}</h1>
-        <p class="article__summary">${escapeHtml(item.detail || item.summary || "")}</p>
+        <div class="article__text">${paras}</div>
         <a class="article__source" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
           Lire l'article sur ${src} <span aria-hidden="true">↗</span>
         </a>
@@ -297,7 +300,8 @@ function openDetailByKey(key) {
   if (item) openDetail(item);
 }
 function openDetail(item) {
-  state.returnView = state.view;
+  closeSearch(); // au cas où on vient de la recherche
+  state.returnView = state.view === "article" ? state.returnView : state.view;
   state.returnScroll = window.scrollY;
   state.article = item;
   state.view = "article";
@@ -485,36 +489,13 @@ function renderSearchResults(query) {
       <div class="search-result__title">${escapeHtml(item.title)}</div>
     </div>`).join("");
   searchResults.querySelectorAll(".search-result").forEach((el) =>
-    el.addEventListener("click", () => openArticle(el.dataset.key, el.dataset.date))
+    el.addEventListener("click", () => {
+      const entry = searchCorpus.find(
+        (e) => readKey(e.item) === el.dataset.key && e.date === el.dataset.date
+      );
+      if (entry) openDetail(entry.item); // clic sur un résultat -> page détail in-app
+    })
   );
-}
-
-/** Ferme la recherche, charge le bon jour si besoin, puis défile jusqu'à l'article. */
-async function openArticle(key, date) {
-  closeSearch();
-  // Charge le jour de l'article s'il n'est pas celui affiché
-  if (date && date !== state.data?.date) {
-    try {
-      const day = date === window.__todayDate ? window.__today : await loadHistoryDay(date);
-      state.data = day;
-      indexTopics(day);
-      setHeaderDate(day.date);
-    } catch { /* ignore */ }
-  }
-  state.view = "today";
-  state.filter = "all";
-  setActiveTab("today");
-  await render({ keepScroll: true });
-  requestAnimationFrame(() => {
-    for (const c of document.querySelectorAll(".card")) {
-      if (c.dataset.key === key) {
-        c.scrollIntoView({ behavior: "smooth", block: "center" });
-        c.classList.add("is-highlight");
-        setTimeout(() => c.classList.remove("is-highlight"), 1800);
-        break;
-      }
-    }
-  });
 }
 
 // Logo -> retour à la page d'accueil (récap du jour, filtre Tout)

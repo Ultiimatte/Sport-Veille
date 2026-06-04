@@ -54,6 +54,14 @@ export const categories = [
     //  On melange des flux mono-sport (topic precise) et des flux generalistes
     //  (topic vide -> classement automatique par mots-cles).
     feeds: [
+      // Flux generalistes FR traites EN PREMIER : ils "gagnent" au dedoublonnage
+      // (plus de diversite de sources + souvent le texte complet de l'article).
+      { name: "Le Monde",      url: "https://www.lemonde.fr/sport/rss_full.xml",         topic: "" },
+      { name: "France Info",   url: "https://www.franceinfo.fr/sports.rss",              topic: "" }, // URL finale (evite la redirection francetvinfo)
+      { name: "20 Minutes",    url: "https://www.20minutes.fr/feeds/rss-sport.xml",      topic: "" },
+      { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",             topic: "" },
+      { name: "RFI Sport",     url: "https://www.rfi.fr/fr/sports/rss",                  topic: "" },
+
       // L'Equipe -- flux par sport (classement direct, riche en images).
       // URL testees le 2026-06-01 (API dwh.lequipe.fr).
       { name: "L'Equipe", url: "https://dwh.lequipe.fr/api/edito/rss?path=/Football/",         topic: "football" },
@@ -71,13 +79,6 @@ export const categories = [
       { name: "L'Equipe", url: "https://dwh.lequipe.fr/api/edito/rss?path=/Esport/",           topic: "esport" },
       { name: "L'Equipe", url: "https://dwh.lequipe.fr/api/edito/rss?path=/Golf/",             topic: "autre" },
       { name: "L'Equipe", url: "https://dwh.lequipe.fr/api/edito/rss?path=/Ski/",              topic: "autre" },
-
-      // Flux generalistes FR (riches en resume texte) -> classement par mots-cles.
-      { name: "Le Monde",      url: "https://www.lemonde.fr/sport/rss_full.xml",         topic: "" },
-      { name: "France Info",   url: "https://www.franceinfo.fr/sports.rss",              topic: "" }, // URL finale (evite la redirection francetvinfo)
-      { name: "20 Minutes",    url: "https://www.20minutes.fr/feeds/rss-sport.xml",      topic: "" },
-      { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",             topic: "" },
-      { name: "RFI Sport",     url: "https://www.rfi.fr/fr/sports/rss",                  topic: "" },
     ],
   },
 

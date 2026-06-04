@@ -276,7 +276,7 @@ async function fetchArticleText(url) {
     const paragraphs = [...scope.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
       .map((m) => decodeEntities(m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()))
       .filter((t) => t.length > 40);
-    let text = paragraphs.join("\n");
+    let text = paragraphs.join("\n\n"); // ligne vide entre les paragraphes
     if (text.length < 200) {
       const og = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
       if (og) text = decodeEntities(og[1]);
@@ -409,12 +409,15 @@ async function main() {
   // Tri par date (recent -> ancien)
   all.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
-  // Plafond par sport (preserve la diversite des disciplines)
-  if (settings.maxItemsPerTopic > 0) {
-    const perTopic = {};
+  // Plafonds par sport ET par source (preserve la diversite)
+  if (settings.maxItemsPerTopic > 0 || settings.maxItemsPerSource > 0) {
+    const perTopic = {}, perSource = {};
     all = all.filter((it) => {
       perTopic[it.topic] = (perTopic[it.topic] || 0) + 1;
-      return perTopic[it.topic] <= settings.maxItemsPerTopic;
+      perSource[it.source] = (perSource[it.source] || 0) + 1;
+      const okTopic = !settings.maxItemsPerTopic || perTopic[it.topic] <= settings.maxItemsPerTopic;
+      const okSource = !settings.maxItemsPerSource || perSource[it.source] <= settings.maxItemsPerSource;
+      return okTopic && okSource;
     });
   }
 

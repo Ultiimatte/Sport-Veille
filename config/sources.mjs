@@ -111,6 +111,9 @@ export const settings = {
   // Plafond par sport, pour preserver la diversite (eviter que le football
   // ne monopolise tout le recap). Mettre 0 pour desactiver.
   maxItemsPerTopic: 12,
+  // Plafond par SOURCE, pour eviter qu'un seul media (ex: L'Equipe, qui a
+  // beaucoup de flux) ne monopolise le recap. Mettre 0 pour desactiver.
+  maxItemsPerSource: 18,
   // Longueur maximale du resume (caracteres). La liste tronque a ~10 lignes
   // (CSS) ; la page detail affiche tout. On garde donc plus de texte ici.
   summaryMaxChars: 1200,

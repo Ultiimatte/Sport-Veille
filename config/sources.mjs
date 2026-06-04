@@ -59,6 +59,9 @@ export const categories = [
       { name: "Le Monde",      url: "https://www.lemonde.fr/sport/rss_full.xml",         topic: "" },
       { name: "France Info",   url: "https://www.franceinfo.fr/sports.rss",              topic: "" }, // URL finale (evite la redirection francetvinfo)
       { name: "20 Minutes",    url: "https://www.20minutes.fr/feeds/rss-sport.xml",      topic: "" },
+      { name: "Le Parisien",   url: "https://feeds.leparisien.fr/leparisien/rss/sports", topic: "" }, // multi-sports, flux fourni (~100 articles)
+      { name: "Sud Ouest",     url: "https://www.sudouest.fr/sport/rss.xml",             topic: "" }, // multi-sports regional
+      { name: "La Depeche",    url: "https://www.ladepeche.fr/sport/rss.xml",            topic: "" }, // multi-sports regional
       { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",             topic: "" },
       { name: "RFI Sport",     url: "https://www.rfi.fr/fr/sports/rss",                  topic: "" },
 
@@ -114,7 +117,9 @@ export const settings = {
   maxItemsPerTopic: 12,
   // Plafond par SOURCE, pour eviter qu'un seul media (ex: L'Equipe, qui a
   // beaucoup de flux) ne monopolise le recap. Mettre 0 pour desactiver.
-  maxItemsPerSource: 18,
+  // Plafond "souple" : L'Equipe (source la plus riche) reste bien presente
+  // mais laisse de la place aux autres medias pour une vraie diversite.
+  maxItemsPerSource: 25,
   // Longueur maximale du resume (caracteres). La liste tronque a ~10 lignes
   // (CSS) ; la page detail affiche tout. On garde donc plus de texte ici.
   summaryMaxChars: 1200,

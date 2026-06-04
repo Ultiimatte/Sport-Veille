@@ -239,13 +239,72 @@ function dedupe(items) {
 }
 
 // ---------------------------------------------------------------------------
-//  (Phase 2) Branchement IA — laisse pret pour plus tard.
+//  Reecriture IA (Google Gemini, palier gratuit) -> champ `detail`
+//  S'active uniquement si la cle GEMINI_API_KEY est presente (sinon ignore).
+//  Le champ `detail` n'apparait QUE dans la page detail de l'app (la liste
+//  garde le `summary` court). Mise en cache par URL pour ne pas regenerer.
 // ---------------------------------------------------------------------------
-// async function enrichWithAI(items) {
-//   // Ici : appel a Claude/OpenAI pour reecrire un resume FR clair, traduire
-//   // les sources internationales, et regrouper les doublons semantiques.
-//   return items;
-// }
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = "gemini-2.0-flash";
+const AI_THROTTLE_MS = 4500; // ~13 req/min, sous la limite gratuite (15/min)
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function aiRewrite(title, summary) {
+  const prompt =
+    "Tu es journaliste sportif. À partir UNIQUEMENT des informations ci-dessous " +
+    "(titre + court résumé), rédige un court article de 4 à 6 phrases en français, " +
+    "clair et fluide. RÈGLES STRICTES : n'invente AUCUN fait, chiffre, score, date, " +
+    "citation ou nom qui ne soit pas dans le résumé ; si l'info est mince, reste " +
+    "général sans broder. Ne mets pas de titre, donne directement le texte.\n\n" +
+    `Titre : ${title}\nRésumé source : ${summary}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.4, maxOutputTokens: 400 },
+    }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error("réponse vide");
+  return text;
+}
+
+/** Charge les `detail` deja generes (news.json precedent) pour ne pas refaire. */
+async function loadDetailCache() {
+  const map = {};
+  try {
+    const prev = JSON.parse(await readFile(path.join(DATA_DIR, "news.json"), "utf8"));
+    for (const it of prev.items || []) if (it.url && it.detail) map[it.url] = it.detail;
+  } catch { /* pas de fichier precedent */ }
+  return map;
+}
+
+async function enrichWithAI(items) {
+  if (!GEMINI_KEY) {
+    console.log("Pas de GEMINI_API_KEY -> reecriture IA ignoree.");
+    return;
+  }
+  const cache = await loadDetailCache();
+  let done = 0, fromCache = 0, failed = 0;
+  for (const it of items) {
+    if (cache[it.url]) { it.detail = cache[it.url]; fromCache++; continue; }
+    if (!it.summary || it.summary.length < 30) continue; // pas assez de matiere
+    try {
+      it.detail = await aiRewrite(it.title, it.summary);
+      done++;
+      await sleep(AI_THROTTLE_MS);
+    } catch (e) {
+      failed++;
+      console.warn(`  ⚠️ IA échouée (${it.title.slice(0, 40)}…) : ${e.message}`);
+    }
+  }
+  console.log(`Reecriture IA : ${done} générés, ${fromCache} repris du cache, ${failed} échecs.`);
+}
 
 // ---------------------------------------------------------------------------
 //  Programme principal
@@ -299,7 +358,7 @@ async function main() {
   all = all.slice(0, settings.maxItemsPerDay);
   console.log(`Apres plafonds : ${all.length}`);
 
-  // all = await enrichWithAI(all); // <- Phase 2
+  await enrichWithAI(all); // ajoute le champ `detail` (page détail) si clé IA présente
 
   const dateKey = win.dateKey;
   const payload = {

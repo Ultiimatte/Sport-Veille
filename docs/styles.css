@@ -103,6 +103,17 @@ body {
 .logo b { font-weight: 800; color: var(--text); }
 .logo span { font-weight: 500; color: var(--text-soft); }
 
+.topbar__left { display: flex; align-items: center; gap: 8px; }
+.back-btn {
+  display: none;               /* visible uniquement en vue détail */
+  align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex: 0 0 auto;
+  border: none; border-radius: 50%;
+  background: var(--surface-2); color: var(--text);
+  cursor: pointer;
+}
+.back-btn:active { transform: scale(0.92); }
+
 .actions { display: flex; align-items: center; gap: 8px; }
 .date-pill {
   background: var(--surface-2);
@@ -314,3 +325,51 @@ body.search-open { overflow: hidden; }         /* fige les actus en arrière-pla
 
 /* Surbrillance de l'article ciblé après un clic sur un résultat */
 .card.is-highlight { box-shadow: 0 0 0 3px var(--accent), var(--card-shadow); }
+
+.card__link { cursor: pointer; }
+
+/* ---------- Vue détail d'un article ---------- */
+/* En vue détail : on ne garde que le logo + le bouton retour dans l'en-tête. */
+body.is-article .actions,
+body.is-article #filters,
+body.is-article .tabbar { display: none; }
+body.is-article .back-btn { display: inline-flex; }
+body.is-article { padding-bottom: 0; }
+
+.article {
+  max-width: 720px; margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+.article__img {
+  width: 100%; aspect-ratio: 16 / 9; object-fit: cover;
+  background: var(--surface-2); display: block;
+}
+.article__img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+.article__body { padding: 18px 18px 24px; }
+.article__meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 0.78rem; color: var(--text-soft); margin-bottom: 12px;
+}
+.article__title {
+  font-size: 1.5rem; font-weight: 800; line-height: 1.25;
+  letter-spacing: -0.01em; margin: 0 0 14px;
+}
+.article__summary {
+  font-size: 1.02rem; line-height: 1.6; color: var(--text); margin: 0 0 14px;
+  white-space: pre-line;
+}
+.article__ai-note {
+  font-size: 0.76rem; color: var(--text-soft); margin: 0 0 20px;
+  font-style: italic;
+}
+.article__source {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent); color: var(--accent-text);
+  text-decoration: none; font-weight: 700; font-size: 0.95rem;
+  padding: 13px 20px; border-radius: 999px;
+}
+.article__source:active { opacity: 0.85; }

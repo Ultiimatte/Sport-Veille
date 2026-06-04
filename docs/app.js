@@ -121,7 +121,7 @@ function cardHtml(item, readIds) {
     : `<div class="card__img card__img--placeholder">${t.emoji}</div>`;
   return `
     <article class="card ${isRead ? "is-read" : ""}" data-key="${key}">
-      <a class="card__link" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
+      <div class="card__link" data-open="${key}">
         ${img}
         <div class="card__body">
           <div class="card__meta">
@@ -131,7 +131,7 @@ function cardHtml(item, readIds) {
           <h3 class="card__title">${escapeHtml(item.title)}</h3>
           <p class="card__summary">${escapeHtml(item.summary || "")}</p>
         </div>
-      </a>
+      </div>
       <div class="card__footer">
         <span class="card__source">${escapeHtml(item.source || "")}</span>
         <button class="read-btn ${isRead ? "is-read" : ""}" data-read="${key}">
@@ -226,13 +226,41 @@ function renderSettings() {
     <button class="btn-block" id="clear-read" style="margin-top:10px;">↺ Réinitialiser les "lus"</button>`;
 }
 
+/* ---------- Vue détail d'un article (in-app) ---------- */
+function renderArticle(item) {
+  if (!item) return `<div class="empty"><span class="empty__emoji">🔍</span>Article introuvable.</div>`;
+  const t = topicInfo(item.topic);
+  const img = item.image
+    ? `<img class="article__img" src="${escapeHtml(item.image)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'article__img article__img--placeholder',textContent:'${t.emoji}'}))" />`
+    : `<div class="article__img article__img--placeholder">${t.emoji}</div>`;
+  const src = escapeHtml(item.source || "le site");
+  return `
+    <article class="article">
+      ${img}
+      <div class="article__body">
+        <div class="article__meta">
+          <span class="badge">${t.emoji} ${escapeHtml(t.label)}</span>
+          <span>${formatDateTime(item.publishedAt)}</span>
+        </div>
+        <h1 class="article__title">${escapeHtml(item.title)}</h1>
+        <p class="article__summary">${escapeHtml(item.detail || item.summary || "")}</p>
+        ${item.detail ? `<p class="article__ai-note">✨ Texte reformulé automatiquement — à vérifier via la source.</p>` : ""}
+        <a class="article__source" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
+          Lire l'article sur ${src} <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </article>`;
+}
+
 /* ---------- Orchestration ---------- */
 async function render(opts = {}) {
   const content = document.getElementById("content");
+  document.body.classList.toggle("is-article", state.view === "article");
   renderFilters();
   if (state.view === "today") content.innerHTML = renderToday();
   else if (state.view === "history") { content.innerHTML = `<div class="loader">…</div>`; content.innerHTML = await renderHistory(); }
   else if (state.view === "settings") { content.innerHTML = renderSettings(); bindSettings(); }
+  else if (state.view === "article") { content.innerHTML = renderArticle(state.article); }
   bindReadButtons();
   bindHistory();
   bindCardLinks();
@@ -259,17 +287,29 @@ function bindReadButtons() {
   });
 }
 
-/** Clic sur un article -> ouvre la source, le marque lu et le renvoie en bas. */
+/** Clic sur une carte -> ouvre la page détail in-app (et marque lu). */
 function bindCardLinks() {
-  document.querySelectorAll(".card__link").forEach((a) => {
-    a.addEventListener("click", () => {
-      const id = a.closest(".card")?.dataset.key;
-      if (!id) return;
-      toggleRead(id, true);
-      // léger délai pour laisser le navigateur ouvrir l'article d'abord
-      setTimeout(() => render({ keepScroll: true }), 60);
-    });
+  document.querySelectorAll("[data-open]").forEach((el) => {
+    el.addEventListener("click", () => openDetailByKey(el.dataset.open));
   });
+}
+function openDetailByKey(key) {
+  const item = (state.data?.items || []).find((i) => readKey(i) === key);
+  if (item) openDetail(item);
+}
+function openDetail(item) {
+  state.returnView = state.view;
+  state.returnScroll = window.scrollY;
+  state.article = item;
+  state.view = "article";
+  toggleRead(readKey(item), true); // consulté -> marqué lu
+  render();
+}
+function goBackFromArticle() {
+  state.view = state.returnView || "today";
+  setActiveTab(state.view);
+  render({ keepScroll: true });
+  requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
 }
 
 function bindHistory() {
@@ -480,6 +520,7 @@ async function openArticle(key, date) {
 
 // Logo -> retour à la page d'accueil (récap du jour, filtre Tout)
 document.querySelector(".logo").addEventListener("click", goHome);
+document.getElementById("backBtn").addEventListener("click", goBackFromArticle);
 
 function goHome() {
   if (window.__today) { state.data = window.__today; indexTopics(state.data); setHeaderDate(state.data.date); }

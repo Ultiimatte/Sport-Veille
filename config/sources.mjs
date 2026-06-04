@@ -111,9 +111,9 @@ export const settings = {
   // Plafond par sport, pour preserver la diversite (eviter que le football
   // ne monopolise tout le recap). Mettre 0 pour desactiver.
   maxItemsPerTopic: 12,
-  // Longueur maximale du resume (caracteres). ~600 = jusqu'a ~10 lignes
-  // sur mobile, quand la source fournit assez de texte.
-  summaryMaxChars: 600,
+  // Longueur maximale du resume (caracteres). La liste tronque a ~10 lignes
+  // (CSS) ; la page detail affiche tout. On garde donc plus de texte ici.
+  summaryMaxChars: 1200,
   // Nombre de jours d'historique conserves.
   historyDays: 30,
   // Fuseau utilise pour calculer la "date du jour" du recap.

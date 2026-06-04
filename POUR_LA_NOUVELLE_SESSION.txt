@@ -1,0 +1,47 @@
+Salut Claude !
+
+Je continue un projet existant avec toi, on change juste de session (la fenêtre de
+contexte de la précédente était pleine). Avant de faire quoi que ce soit, j'ai besoin
+que tu reprennes le contexte.
+
+📂 LE PROJET
+Il s'appelle "SportVeille". C'est une app web (PWA) personnelle qui me fait un récap
+quotidien de l'actu sportive. Le dossier est sur mon Bureau :
+    ~/Desktop/SportVeille
+
+📖 À FAIRE EN PREMIER (très important)
+1. Ouvre et LIS EN ENTIER le fichier :  ~/Desktop/SportVeille/PROJECT_CONTEXT.md
+   Il contient TOUT : objectif, architecture, décisions prises, structure des fichiers,
+   état actuel, pièges à éviter, et les tâches prioritaires. Ne commence rien avant de
+   l'avoir lu.
+2. Jette aussi un œil à ces fichiers clés pour te remettre dans le bain :
+   - config/sources.mjs      (config centrale : sources RSS + réglages)
+   - scripts/build-news.mjs  (le générateur du récap)
+   - docs/app.js             (toute la logique du site)
+   - docs/sw.js              (service worker)
+
+👤 COMMENT JE TRAVAILLE (à respecter)
+- Je suis DÉBUTANT en dev et en Git. Parle-moi simplement, en français, et guide-moi
+  pas à pas avec des étapes à copier-coller.
+- Je publie mes changements avec GitHub Desktop (Commit + Push). Je ne tape PAS de
+  commandes Git dans un terminal.
+- Je veux que tout reste GRATUIT et SIMPLE.
+
+⚠️ PIÈGES IMPORTANTS (détaillés dans PROJECT_CONTEXT.md)
+- Node n'est pas installé sur mon Mac (tu valides le JS autrement, voir le doc).
+- Ne régénère pas les données en local pour les committer (ça crée des conflits Git).
+- Incrémente la version du cache dans docs/sw.js dès que tu modifies le site.
+- Pour les notifications iOS, le "from SportVeille" ne peut pas être retiré (c'est iOS).
+
+🎯 OÙ ON EN ÉTAIT (à vérifier en priorité)
+On venait de corriger un problème de DIVERSITÉ DES SOURCES : mon récap n'affichait
+quasiment que des articles de "L'Équipe" (~27 articles au lieu de ~80). Le correctif
+(fusion d'édition + traiter les sources généralistes en premier + plafond de 18 articles
+par source) est posé mais doit être VÉRIFIÉ après une nouvelle génération.
+👉 Aide-moi d'abord à : publier ce correctif (Commit + Push), lancer un run du workflow
+GitHub, puis vérifier que les sources sont bien variées.
+
+Une fois que tu as lu PROJECT_CONTEXT.md, fais-moi un court résumé de ce que tu as
+compris (objectif + état actuel + prochaine étape), puis on continue.
+
+Merci !

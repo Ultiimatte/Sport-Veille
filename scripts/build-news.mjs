@@ -239,10 +239,11 @@ function dedupe(items) {
 }
 
 // ---------------------------------------------------------------------------
-//  Reecriture IA (Google Gemini, palier gratuit) -> champ `detail`
-//  S'active uniquement si la cle GEMINI_API_KEY est presente (sinon ignore).
-//  Le champ `detail` n'apparait QUE dans la page detail de l'app (la liste
-//  garde le `summary` court). Mise en cache par URL pour ne pas regenerer.
+//  Enrichissement des articles (lecture de la page) :
+//   - `detail`  = texte complet de l'article (page detail in-app) — PAS d'IA.
+//   - `summary` = resume court de la liste : resume IA si article entier +
+//                 cle Gemini presente, sinon extrait coupe a ~5 lignes.
+//  Mise en cache par URL (news.json precedent) pour ne pas tout refaire.
 // ---------------------------------------------------------------------------
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = "gemini-2.0-flash";
@@ -303,54 +304,70 @@ async function callGemini(prompt) {
   return text;
 }
 
-/** Resume l'article : a partir du TEXTE de la page si dispo, sinon de l'extrait RSS. */
-async function aiSummarize(item) {
-  const articleText = await fetchArticleText(item.url);
-  let prompt;
-  if (articleText && articleText.length > 300) {
-    prompt =
-      "Voici le texte d'un article de presse sportive. Rédige un résumé clair, fidèle " +
-      "et fluide en français, de 5 à 8 phrases, SANS rien inventer ni ajouter d'opinion. " +
-      "Ne mets pas de titre, donne directement le résumé.\n\n" +
-      articleText;
-  } else {
-    prompt =
-      "À partir UNIQUEMENT du titre et du court extrait ci-dessous, rédige un court texte " +
-      "de 3 à 5 phrases en français, sans inventer aucun fait. Ne mets pas de titre.\n\n" +
-      `Titre : ${item.title}\nExtrait : ${item.summary || ""}`;
-  }
+const FULL_ACCESS_MIN = 1200;   // longueur de texte au-dela de laquelle on considere "article entier"
+const LIST_SUMMARY_MAX = 320;   // ~5 lignes pour le resume de la liste
+
+/** Coupe proprement a N caracteres (sur un mot). */
+function truncate(text = "", max = LIST_SUMMARY_MAX) {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const sp = cut.lastIndexOf(" ");
+  return (sp > 0 ? cut.slice(0, sp) : cut).trim() + "…";
+}
+
+/** Resume IA en ~5 lignes a partir du texte complet de l'article. */
+async function aiSummarize5(articleText) {
+  const prompt =
+    "Voici le texte d'un article de presse sportive. Rédige un résumé fidèle et fluide " +
+    "en français, en 5 lignes maximum (environ 250 caractères), SANS rien inventer ni " +
+    "ajouter d'opinion. Donne directement le résumé, sans titre.\n\n" + articleText;
   return callGemini(prompt);
 }
 
-/** Charge les `detail` deja generes (news.json precedent) pour ne pas refaire. */
-async function loadDetailCache() {
+/** Cache (news.json precedent) : reutilise summary + detail deja calcules. */
+async function loadCache() {
   const map = {};
   try {
     const prev = JSON.parse(await readFile(path.join(DATA_DIR, "news.json"), "utf8"));
-    for (const it of prev.items || []) if (it.url && it.detail) map[it.url] = it.detail;
+    for (const it of prev.items || []) {
+      if (it.url && it.detail) map[it.url] = { summary: it.summary, detail: it.detail };
+    }
   } catch { /* pas de fichier precedent */ }
   return map;
 }
 
-async function enrichWithAI(items) {
-  if (!GEMINI_KEY) {
-    console.log("Pas de GEMINI_API_KEY -> reecriture IA ignoree.");
-    return;
-  }
-  const cache = await loadDetailCache();
-  let done = 0, fromCache = 0, failed = 0;
+/**
+ * Pour chaque article : telecharge la page.
+ *  - Article ENTIER (texte long)  -> detail = tout le texte ; summary = resume IA (~5 lignes)
+ *  - Acces PARTIEL (teaser/bloque) -> detail = le peu de texte ; summary = extrait coupe a 5 lignes
+ * Le `detail` complet ne necessite PAS d'IA ; l'IA ne sert qu'au resume de liste.
+ */
+async function enrichArticles(items) {
+  const cache = await loadCache();
+  let cached = 0, full = 0, partial = 0, aiOk = 0, aiFail = 0;
   for (const it of items) {
-    if (cache[it.url]) { it.detail = cache[it.url]; fromCache++; continue; }
-    try {
-      it.detail = await aiSummarize(it); // lit la page de l'article puis résume
-      done++;
-      await sleep(AI_THROTTLE_MS);
-    } catch (e) {
-      failed++;
-      console.warn(`  ⚠️ IA échouée (${it.title.slice(0, 40)}…) : ${e.message}`);
+    if (cache[it.url]) { it.summary = cache[it.url].summary; it.detail = cache[it.url].detail; cached++; continue; }
+    const rss = it.summary || "";
+    let text = "";
+    try { text = await fetchArticleText(it.url); } catch { /* ignore */ }
+
+    if (text.length >= FULL_ACCESS_MIN) {
+      it.detail = text;                 // tout le texte dans la page detail
+      full++;
+      if (GEMINI_KEY) {
+        try { it.summary = await aiSummarize5(text); aiOk++; await sleep(AI_THROTTLE_MS); }
+        catch (e) { it.summary = truncate(rss || text); aiFail++; console.warn(`  ⚠️ IA: ${e.message}`); }
+      } else {
+        it.summary = truncate(rss || text); // pas de cle -> on garde un extrait court
+      }
+    } else {
+      it.detail = text.length > rss.length ? text : rss; // le peu qu'on a
+      it.summary = truncate(rss);
+      partial++;
     }
   }
-  console.log(`Reecriture IA : ${done} générés, ${fromCache} repris du cache, ${failed} échecs.`);
+  console.log(`Enrichissement : ${full} entiers, ${partial} partiels, ${cached} repris, IA ${aiOk} ok / ${aiFail} échecs.`);
 }
 
 // ---------------------------------------------------------------------------
@@ -405,7 +422,7 @@ async function main() {
   all = all.slice(0, settings.maxItemsPerDay);
   console.log(`Apres plafonds : ${all.length}`);
 
-  await enrichWithAI(all); // ajoute le champ `detail` (page détail) si clé IA présente
+  await enrichArticles(all); // lit les pages : detail = texte complet, summary = résumé court
 
   const dateKey = win.dateKey;
   const payload = {

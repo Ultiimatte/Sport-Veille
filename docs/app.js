@@ -244,7 +244,6 @@ function renderArticle(item) {
         </div>
         <h1 class="article__title">${escapeHtml(item.title)}</h1>
         <p class="article__summary">${escapeHtml(item.detail || item.summary || "")}</p>
-        ${item.detail ? `<p class="article__ai-note">✨ Texte reformulé automatiquement — à vérifier via la source.</p>` : ""}
         <a class="article__source" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">
           Lire l'article sur ${src} <span aria-hidden="true">↗</span>
         </a>

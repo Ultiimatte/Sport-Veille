@@ -250,28 +250,76 @@ const AI_THROTTLE_MS = 4500; // ~13 req/min, sous la limite gratuite (15/min)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function aiRewrite(title, summary) {
-  const prompt =
-    "Tu es journaliste sportif. À partir UNIQUEMENT des informations ci-dessous " +
-    "(titre + court résumé), rédige un court article de 4 à 6 phrases en français, " +
-    "clair et fluide. RÈGLES STRICTES : n'invente AUCUN fait, chiffre, score, date, " +
-    "citation ou nom qui ne soit pas dans le résumé ; si l'info est mince, reste " +
-    "général sans broder. Ne mets pas de titre, donne directement le texte.\n\n" +
-    `Titre : ${title}\nRésumé source : ${summary}`;
+/** Decode les entites HTML courantes (+ numeriques). */
+function decodeEntities(s = "") {
+  return s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
+    .replace(/&apos;|&#39;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
+    .replace(/&laquo;/gi, "«").replace(/&raquo;/gi, "»").replace(/&hellip;/gi, "…");
+}
+
+/** Telecharge la page de l'article et en extrait le texte principal. */
+async function fetchArticleText(url) {
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; SportVeille/1.0)" },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) return "";
+    let html = await res.text();
+    html = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
+    const art = html.match(/<article[\s\S]*?<\/article>/i);
+    const scope = art ? art[0] : html;
+    const paragraphs = [...scope.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+      .map((m) => decodeEntities(m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()))
+      .filter((t) => t.length > 40);
+    let text = paragraphs.join("\n");
+    if (text.length < 200) {
+      const og = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+      if (og) text = decodeEntities(og[1]);
+    }
+    return text.slice(0, 4000);
+  } catch {
+    return "";
+  }
+}
+
+async function callGemini(prompt) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 400 },
+      generationConfig: { temperature: 0.3, maxOutputTokens: 450 },
     }),
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error("réponse vide");
   return text;
+}
+
+/** Resume l'article : a partir du TEXTE de la page si dispo, sinon de l'extrait RSS. */
+async function aiSummarize(item) {
+  const articleText = await fetchArticleText(item.url);
+  let prompt;
+  if (articleText && articleText.length > 300) {
+    prompt =
+      "Voici le texte d'un article de presse sportive. Rédige un résumé clair, fidèle " +
+      "et fluide en français, de 5 à 8 phrases, SANS rien inventer ni ajouter d'opinion. " +
+      "Ne mets pas de titre, donne directement le résumé.\n\n" +
+      articleText;
+  } else {
+    prompt =
+      "À partir UNIQUEMENT du titre et du court extrait ci-dessous, rédige un court texte " +
+      "de 3 à 5 phrases en français, sans inventer aucun fait. Ne mets pas de titre.\n\n" +
+      `Titre : ${item.title}\nExtrait : ${item.summary || ""}`;
+  }
+  return callGemini(prompt);
 }
 
 /** Charge les `detail` deja generes (news.json precedent) pour ne pas refaire. */
@@ -293,9 +341,8 @@ async function enrichWithAI(items) {
   let done = 0, fromCache = 0, failed = 0;
   for (const it of items) {
     if (cache[it.url]) { it.detail = cache[it.url]; fromCache++; continue; }
-    if (!it.summary || it.summary.length < 30) continue; // pas assez de matiere
     try {
-      it.detail = await aiRewrite(it.title, it.summary);
+      it.detail = await aiSummarize(it); // lit la page de l'article puis résume
       done++;
       await sleep(AI_THROTTLE_MS);
     } catch (e) {

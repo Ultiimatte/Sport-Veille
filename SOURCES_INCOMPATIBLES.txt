@@ -1,5 +1,5 @@
 SOURCES RSS TESTÉES ET NON COMPATIBLES — SportVeille
-Testées le 2026-06-04.
+Testées le 2026-06-04. (Re-testées avec les URLs fournies par l'utilisateur.)
 
 POURQUOI UNE SOURCE EST "INCOMPATIBLE" ?
 Le générateur (build-news.mjs) lit un FLUX RSS et a besoin, pour chaque
@@ -9,66 +9,76 @@ Une source est rejetée si :
   - le flux RSS n'existe pas (erreur 404),
   - l'accès est bloqué (erreur 403 / 406 / 503),
   - le flux répond mais ne contient aucun article exploitable,
-  - le flux est périmé (plus mis à jour).
+  - le flux est périmé (plus mis à jour),
+  - seul un flux GÉNÉRALISTE existe (tous sujets) : il polluerait la rubrique
+    Sport avec de la politique / des faits divers classés en "Autres sports".
+
+========================================================================
+APRÈS RE-TEST, 4 SOURCES SONT FINALEMENT DEVENUES COMPATIBLES (ajoutées) :
+  - So Foot        -> https://www.sofoot.com/rss/articles            (football)
+  - TF1 Info Sport -> https://www.tf1info.fr/feeds/rss-une.xml?category=/sport (multi)
+  - Basket Europe  -> https://www.basketeurope.com/latest/rss/       (basket)
+  - Cyclism'Actu   -> https://www.cyclismactu.net/rss_social.xml     (cyclisme)
+========================================================================
 
 ------------------------------------------------------------------------
-LISTE DES SOURCES INCOMPATIBLES (32)
+SOURCES TOUJOURS INCOMPATIBLES
 ------------------------------------------------------------------------
 
-FLUX INEXISTANT (erreur 404) :
-  - Eurosport France        (https://www.eurosport.fr/rss.xml — plus de flux public)
-  - France Football         (intégré à lequipe.fr, pas de flux propre)
-  - So Foot                 (aucun flux RSS trouvé)
-  - Sport.fr                (404 — NB : "Sports.fr" avec un S, lui, marche → AJOUTÉ)
-  - BFMTV Sport             (404)
-  - RTL Sport               (404)
-  - Europe 1 Sport          (404)
-  - Le Télégramme Sport     (404)
-  - DNA (Derns. Nouv. d'Alsace) (404)
-  - L'Est Républicain Sport (404)
-  - Le Progrès Sport        (404)
-  - La Nouvelle République Sport (404)
-  - Actu.fr Sport           (404)
-  - Journal du Golf         (404)
-  - Cyclism'Actu            (404)
-  - Basket Europe           (404)
-  - L'Écho Républicain Sport (404)
-  - Le Dauphiné Libéré Sport (404)
-  - Le Journal du Centre Sport (404)
-
-ACCÈS BLOQUÉ PAR LE SITE (403 / 406 / 503) :
-  - La Voix du Nord Sport   (403)
+ACCÈS BLOQUÉ PAR LE SITE (même page d'accueil inaccessible aux robots) :
+  - La Voix du Nord Sport   (page et flux en erreur 403)
+  - Eurosport France        (site en erreur 403, aucun flux accessible)
   - L'Union Sport           (403)
   - Paris-Normandie Sport   (403)
   - Nice-Matin Sport        (406)
   - Corse-Matin Sport       (503)
 
-FLUX QUI RÉPOND MAIS SANS ARTICLE EXPLOITABLE :
-  - RMC Sport               (le flux se charge mais 0 article)
-  - TF1 Info Sport          (0 article)
-  - BFMTV Sport (variante)  (0 article)
-  - Le Point Sport          (0 article)
-  - Yahoo Sport France      (0 article)
+FLUX QUI RÉPOND MAIS SANS AUCUN ARTICLE :
+  - RMC Sport               (https://rmcsport.bfmtv.com/rss/ : se charge mais 0 article)
+  - Le Progrès Sport        (https://www.leprogres.fr/flux-rss : 0 article)
 
-REDIRECTION EN BOUCLE :
-  - Tennis Actu             (redirige sans fin, flux inaccessible)
+AUCUN FLUX RSS DÉCLARÉ SUR LE SITE :
+  - RTL.be Sport            (aucun flux RSS trouvé sur la page)
+  - L'Est Républicain Sport (aucun flux RSS trouvé)
+  - L'Écho Républicain Sport (aucun flux RSS trouvé)
+  - RTL Sport (rtl.fr)      (404)
+  - Le Télégramme Sport     (404)
+  - DNA (Derns. Nouv. d'Alsace) (404)
+  - La Nouvelle République Sport (404)
+  - Actu.fr Sport           (404)
+  - Le Journal du Centre Sport (404)
+  - France Football         (intégré à lequipe.fr, pas de flux propre)
+  - Journal du Golf         (404)
+  - BFMTV Sport             (404)
+
+SEUL UN FLUX GÉNÉRALISTE EXISTE (polluerait la rubrique Sport) :
+  - Europe 1                (seul https://www.europe1.fr/rss.xml — tous sujets)
+  - Le Dauphiné Libéré      (seul https://www.ledauphine.com/rss — tous sujets)
 
 PAS DE FLUX RSS DU TOUT :
   - MSN Sport France        (Microsoft ne propose pas de flux RSS)
   - Orange Sport            (connexion impossible, pas de flux)
 
 FLUX PÉRIMÉ (plus alimenté) :
-  - Dicodusport             (dernier article daté de février 2026 → donnerait 0 article)
+  - Dicodusport             (dernier article daté de février 2026 → 0 article récent)
+
+DOUBLON D'URL :
+  - Sport.fr (sans "s")     (404 — mais "Sports.fr" AVEC un s marche → ajouté)
 
 ------------------------------------------------------------------------
-SOURCES AJOUTÉES (compatibles, pour mémoire) — 9 :
-  Multi-sports : Le Figaro (Sport24), Sports.fr, Midi Libre, La Rép. des Pyrénées
-  Football     : Foot Mercato, Football365
+RÉCAP DES SOURCES AJOUTÉES (compatibles) — 13 au total :
+  Multi-sports : Le Figaro (Sport24), Sports.fr, TF1 Info, Midi Libre,
+                 La Rép. des Pyrénées
+  Football     : Foot Mercato, Football365, So Foot
   Rugby        : Rugbyrama
-  Basket       : BeBasket
+  Basket       : BeBasket, Basket Europe
+  Cyclisme     : Cyclism'Actu
   Handball     : HandNews
+(+ les sources d'origine : L'Équipe, Le Monde, France Info, 20 Minutes,
+   Sud Ouest, La Dépêche, Ouest-France, RFI)
 ------------------------------------------------------------------------
 
-NOTE : certaines sources "bloquées" (403/406) ou "404" pourraient peut-être
-fonctionner avec une autre URL de flux. Si tu trouves l'URL RSS exacte d'un
-de ces médias, donne-la-moi et je la testerai à nouveau.
+NOTE : pour les sites "bloqués" (403/406/503), le blocage vient de leur
+serveur qui refuse les accès automatisés — il n'y a pas de contournement
+simple et gratuit. Si tu trouves une autre URL de flux pour l'un d'eux,
+donne-la-moi et je la testerai.

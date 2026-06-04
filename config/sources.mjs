@@ -65,14 +65,18 @@ export const categories = [
       { name: "La Rep. des Pyrenees", url: "https://www.larepubliquedespyrenees.fr/sport/rss.xml", topic: "" }, // multi-sports regional
       { name: "Le Figaro",     url: "https://sport24.lefigaro.fr/rssfeeds/sport24-accueil.xml", topic: "" }, // Sport24, multi-sports
       { name: "Sports.fr",     url: "https://www.sports.fr/rss",                            topic: "" }, // multi-sports
+      { name: "TF1 Info",      url: "https://www.tf1info.fr/feeds/rss-une.xml?category=/sport", topic: "" }, // flux filtre sur le Sport
       { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",                topic: "" },
       { name: "RFI Sport",     url: "https://www.rfi.fr/fr/sports/rss",                     topic: "" },
 
       // Flux specialises mono-sport (places avant L'Equipe -> gagnent au dedoublonnage).
       { name: "Foot Mercato",  url: "https://www.footmercato.net/flux-rss",                 topic: "football" },
       { name: "Football365",   url: "https://www.football365.fr/feed",                      topic: "football" },
+      { name: "So Foot",       url: "https://www.sofoot.com/rss/articles",                  topic: "football" },
       { name: "Rugbyrama",     url: "https://www.rugbyrama.fr/rss.xml",                     topic: "rugby" },
       { name: "BeBasket",      url: "https://www.bebasket.fr/feed",                         topic: "basket" },
+      { name: "Basket Europe", url: "https://www.basketeurope.com/latest/rss/",             topic: "basket" },
+      { name: "Cyclism'Actu",  url: "https://www.cyclismactu.net/rss_social.xml",           topic: "cyclisme" },
       { name: "HandNews",      url: "https://www.handnews.fr/feed/",                        topic: "handball" },
 
       // L'Equipe -- flux par sport (classement direct, riche en images).

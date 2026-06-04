@@ -56,13 +56,24 @@ export const categories = [
     feeds: [
       // Flux generalistes FR traites EN PREMIER : ils "gagnent" au dedoublonnage
       // (plus de diversite de sources + souvent le texte complet de l'article).
-      { name: "Le Monde",      url: "https://www.lemonde.fr/sport/rss_full.xml",         topic: "" },
-      { name: "France Info",   url: "https://www.franceinfo.fr/sports.rss",              topic: "" }, // URL finale (evite la redirection francetvinfo)
-      { name: "20 Minutes",    url: "https://www.20minutes.fr/feeds/rss-sport.xml",      topic: "" },
-      { name: "Sud Ouest",     url: "https://www.sudouest.fr/sport/rss.xml",             topic: "" }, // multi-sports regional
-      { name: "La Depeche",    url: "https://www.ladepeche.fr/sport/rss.xml",            topic: "" }, // multi-sports regional
-      { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",             topic: "" },
-      { name: "RFI Sport",     url: "https://www.rfi.fr/fr/sports/rss",                  topic: "" },
+      { name: "Le Monde",      url: "https://www.lemonde.fr/sport/rss_full.xml",            topic: "" },
+      { name: "France Info",   url: "https://www.franceinfo.fr/sports.rss",                 topic: "" }, // URL finale (evite la redirection francetvinfo)
+      { name: "20 Minutes",    url: "https://www.20minutes.fr/feeds/rss-sport.xml",         topic: "" },
+      { name: "Sud Ouest",     url: "https://www.sudouest.fr/sport/rss.xml",                topic: "" }, // multi-sports regional
+      { name: "La Depeche",    url: "https://www.ladepeche.fr/sport/rss.xml",               topic: "" }, // multi-sports regional
+      { name: "Midi Libre",    url: "https://www.midilibre.fr/sport/rss.xml",               topic: "" }, // multi-sports regional
+      { name: "La Rep. des Pyrenees", url: "https://www.larepubliquedespyrenees.fr/sport/rss.xml", topic: "" }, // multi-sports regional
+      { name: "Le Figaro",     url: "https://sport24.lefigaro.fr/rssfeeds/sport24-accueil.xml", topic: "" }, // Sport24, multi-sports
+      { name: "Sports.fr",     url: "https://www.sports.fr/rss",                            topic: "" }, // multi-sports
+      { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",                topic: "" },
+      { name: "RFI Sport",     url: "https://www.rfi.fr/fr/sports/rss",                     topic: "" },
+
+      // Flux specialises mono-sport (places avant L'Equipe -> gagnent au dedoublonnage).
+      { name: "Foot Mercato",  url: "https://www.footmercato.net/flux-rss",                 topic: "football" },
+      { name: "Football365",   url: "https://www.football365.fr/feed",                      topic: "football" },
+      { name: "Rugbyrama",     url: "https://www.rugbyrama.fr/rss.xml",                     topic: "rugby" },
+      { name: "BeBasket",      url: "https://www.bebasket.fr/feed",                         topic: "basket" },
+      { name: "HandNews",      url: "https://www.handnews.fr/feed/",                        topic: "handball" },
 
       // L'Equipe -- flux par sport (classement direct, riche en images).
       // URL testees le 2026-06-01 (API dwh.lequipe.fr).

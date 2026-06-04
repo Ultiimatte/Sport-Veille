@@ -59,7 +59,6 @@ export const categories = [
       { name: "Le Monde",      url: "https://www.lemonde.fr/sport/rss_full.xml",         topic: "" },
       { name: "France Info",   url: "https://www.franceinfo.fr/sports.rss",              topic: "" }, // URL finale (evite la redirection francetvinfo)
       { name: "20 Minutes",    url: "https://www.20minutes.fr/feeds/rss-sport.xml",      topic: "" },
-      { name: "Le Parisien",   url: "https://feeds.leparisien.fr/leparisien/rss/sports", topic: "" }, // multi-sports, flux fourni (~100 articles)
       { name: "Sud Ouest",     url: "https://www.sudouest.fr/sport/rss.xml",             topic: "" }, // multi-sports regional
       { name: "La Depeche",    url: "https://www.ladepeche.fr/sport/rss.xml",            topic: "" }, // multi-sports regional
       { name: "Ouest-France",  url: "https://www.ouest-france.fr/rss/sport",             topic: "" },

@@ -8,7 +8,12 @@ on:
     - cron: "30 3 * * *"
     - cron: "0 4 * * *"
     - cron: "30 4 * * *"
-  workflow_dispatch: {} # permet aussi de lancer manuellement depuis GitHub
+  workflow_dispatch: # lancement manuel depuis GitHub
+    inputs:
+      message:
+        description: "Texte de notification de TEST (laisser vide = envoi normal)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -36,6 +41,7 @@ jobs:
           PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          TEST_MESSAGE: ${{ github.event.inputs.message }}
         run: |
           pip install --quiet pywebpush
           python3 scripts/send-push.py

@@ -1,6 +1,6 @@
 /* Service worker : "réseau d'abord" pour tout (toujours la dernière version
    quand il y a du réseau), avec le cache comme secours hors-ligne. */
-const CACHE = "sport-veille-v14";
+const CACHE = "sport-veille-v15";
 const SHELL = [
   "./",
   "./index.html",
@@ -46,8 +46,10 @@ self.addEventListener("push", (e) => {
     badge: "./apple-touch-icon.png",
     data: { url: "./index.html" },
   };
-  if (data.body) opts.body = data.body; // pas de 2e ligne si non fournie
-  e.waitUntil(self.registration.showNotification(data.title || "SportVeille", opts));
+  if (data.body) opts.body = data.body;
+  // Titre vide volontaire : on garde seulement l'entête système "from SportVeille" + la description
+  const title = data.title !== undefined ? data.title : "SportVeille";
+  e.waitUntil(self.registration.showNotification(title, opts));
 });
 
 self.addEventListener("notificationclick", (e) => {

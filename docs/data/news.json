@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T08:19:30.502Z",
+  "generatedAt": "2026-06-04T08:26:11.002Z",
   "date": "2026-06-04",
   "categories": [
     {
@@ -79,7 +79,7 @@
       ]
     }
   ],
-  "count": 72,
+  "count": 71,
   "items": [
     {
       "id": "vfxm4c",
@@ -91,17 +91,6 @@
       "url": "https://www.lequipe.fr/Football/Article/Chambreur-deja-a-fond-a-l-entrainement-et-en-premiere-ligne-pour-defendre-ses-coequipiers-kylian-mbappe-deja-en-mode-leader-avec-les-bleus/1681555",
       "image": "https://medias.lequipe.fr/img-photo-jpg/kylian-mbappe-avec-didier-deschamps-vendredi-a-l-entrainement-a-clairefontaine-s-boue-l-equipe/1500000002482847/0:0,2000:1000-828-552-75/de4a9.jpg",
       "publishedAt": "2026-06-04T04:25:00.000Z"
-    },
-    {
-      "id": "4yfk3s",
-      "title": "\"Ça fait un bout de temps que je viens à Roland-Garros...\" Mirra Andreeva, 19 ans seulement mais déjà la plus expérimentée des demi-finalistes",
-      "summary": "La jeune Russe, aux avant-postes du circuit depuis ses 16 ans, est la seule des quatre joueuses encore en lice à avoir déjà disputé une demi-finale de Grand Chelem.",
-      "category": "sport",
-      "topic": "tennis",
-      "source": "France Info",
-      "url": "https://www.franceinfo.fr/roland-garros/ca-fait-un-bout-de-temps-que-je-viens-a-roland-garros-mirra-andreeva-19-ans-seulement-mais-deja-la-plus-experimentee-des-demi-finalistes_8043371.html",
-      "image": "https://www.franceinfo.fr/pictures/togaDpQbH-fQzt_avyX7J_gkTOo/0x0:2880x1620/432x243/filters:format(jpg)/2026/06/03/6a2086e50661c120098649.jpg",
-      "publishedAt": "2026-06-04T04:15:02.000Z"
     },
     {
       "id": "3mok6z",
@@ -511,6 +500,17 @@
       "publishedAt": "2026-06-03T20:42:40.000Z"
     },
     {
+      "id": "1xmlyoo",
+      "title": "Pourquoi le toit du central a-t-il été fermé lors du quart de finale entre Flavio Cobolli et Félix Auger-Aliassime alors qu'il ne pleuvait pas à Roland-Garros ?",
+      "summary": "C'est une scène qui a étonné mercredi : après neuf jeux disputés par grand vent, le quart de finale de Roland-Garros entre Flavio Cobolli et Félix Auger-Aliassime s'est poursuivi avec le toit fermé, alors que la pluie ne tombait pas sur Paris. Tentative d'explication.",
+      "category": "sport",
+      "topic": "tennis",
+      "source": "L'Equipe",
+      "url": "https://www.lequipe.fr/Tennis/Actualites/Pourquoi-le-toit-a-t-il-ete-ferme-lors-du-quart-de-finale-entre-flavio-cobolli-et-felix-auger-aliassime-alors-qu-il-ne-pleuvait-pas/1681587",
+      "image": "https://medias.lequipe.fr/img-photo-jpg/malgre-le-toit-tire-au-dessus-de-lui-felix-auger-aliassime-n-a-jamais-trouve-son-meilleur-tennis-s-mantey-l-equipe/1500000002482901/0:0,2000:1000-828-552-75/e2933.jpg",
+      "publishedAt": "2026-06-03T20:30:10.000Z"
+    },
+    {
       "id": "1slavhj",
       "title": "Les réactions après la victoire de Nanterre à Monaco",
       "summary": "",
@@ -817,17 +817,6 @@
       "url": "https://www.lequipe.fr/collection/podcasts/serie/crunch/",
       "image": "https://medias.lequipe.fr/img-photo-png/-/1500000000833469/0-828-552-75/0cb67.png",
       "publishedAt": "2026-06-03T09:48:00.000Z"
-    },
-    {
-      "id": "19aflov",
-      "title": "Ferrari : « Je crois plus que jamais en cette équipe… » Charles Leclerc prolonge son contrat avec la Scuderia",
-      "summary": "Le pilote monégasque Charles Leclerc, toujours à la recherche d’un premier titre en Formule 1, a prolongé son contrat avec Ferrari",
-      "category": "sport",
-      "topic": "f1",
-      "source": "20 Minutes",
-      "url": "https://www.20minutes.fr/sport/f1/4226924-20260603-ferrari-crois-plus-jamais-equipe-charles-leclerc-prolonge-contrat-scuderia?at_medium=display&at_campaign=149",
-      "image": "https://img.20mn.fr/T5q4o2wZQuuKAoa5f6Tagik/1200x768_22-05-2026-16-charles-leclerc-mon-scuderia-ferrari-hp-ferrari-sf-26-ferrari-lors-du-grand-prix-de-formule-1-aws-du-canada-2026-dimanche-matin-sur-le-circuit-gilles-villeneuve-a-montreal-au-canada-7e-manche-du-championnat-du-monde-de-formule-1-de-la-fia-2026-qui-s-est-tenue-du-22-au-24-mai-2026-le-circuit-gilles-villeneuve-sur-l-ile-notre-dame-de-montreal-du-nom-du-legendaire-pilote-ferrari-accueille-le-format-sprint-pour-la-septieme-manche-ce-week-end-d-evenements-met-en-vedette-le-format-f1-sprint-avec-une-seance-de-tirs-au-but-et-une-course-de-sprint-en-plus-de-la-seance-de-qualification-standard-et-du-grand-prix-photo-d-alessio-de-marco-sipa-etats-unis-70498269-alessio-de-marco-avens-images-com-2605242302",
-      "publishedAt": "2026-06-03T08:22:06.000Z"
     },
     {
       "id": "162jfkk",

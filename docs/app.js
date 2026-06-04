@@ -36,6 +36,13 @@ function applyTheme(theme) {
 }
 
 /* ---------- Utilitaires d'affichage ---------- */
+/** Jour/mois court, ex. « 03/06 ». */
+function formatDayMonth(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 /** Date + heure de publication, ex. « 2 juin · 23h45 ». */
 function formatDateTime(iso) {
   if (!iso) return "";
@@ -431,9 +438,11 @@ function renderSearchResults(query) {
     searchResults.innerHTML = `<div class="search-empty">Aucun article trouvé</div>`;
     return;
   }
+  // Tri du plus récent au plus ancien (par date de publication de l'article)
+  matches.sort((a, b) => new Date(b.item.publishedAt) - new Date(a.item.publishedAt));
   searchResults.innerHTML = matches.map(({ item, date }) => `
     <div class="search-result" data-key="${escapeHtml(readKey(item))}" data-date="${escapeHtml(date)}">
-      <div class="search-result__sport">${escapeHtml(topicInfo(item.topic).label)}</div>
+      <div class="search-result__sport">${escapeHtml(topicInfo(item.topic).label)} · ${formatDayMonth(item.publishedAt)}</div>
       <div class="search-result__title">${escapeHtml(item.title)}</div>
     </div>`).join("");
   searchResults.querySelectorAll(".search-result").forEach((el) =>

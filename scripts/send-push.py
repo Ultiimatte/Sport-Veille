@@ -46,7 +46,7 @@ if edition and edition == last:
 from pywebpush import webpush, WebPushException
 from py_vapid import Vapid01
 
-payload = json.dumps({"title": f"{random.choice(TEXTS)} {random.choice(EMOJIS)}"})
+payload = json.dumps({"title": "SportVeille", "body": f"{random.choice(TEXTS)} {random.choice(EMOJIS)}"})
 try:
     webpush(
         subscription_info=json.loads(sub),

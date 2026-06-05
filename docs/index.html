@@ -30,8 +30,8 @@
     OneSignalDeferred.push(async function (OneSignal) {
       await OneSignal.init({
         appId: "62991026-15c3-4c0b-87e6-9761f09f8cfc",
-        serviceWorkerParam: { scope: "/Sport-Veille/onesignal/" },
-        serviceWorkerPath: "Sport-Veille/onesignal/OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "/Sport-Veille/" },
+        serviceWorkerPath: "Sport-Veille/sw.js",
         autoResubscribe: true,
         notifyButton: { enable: false },
       });

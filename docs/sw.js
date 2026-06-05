@@ -1,6 +1,10 @@
+// OneSignal : on importe le SDK push DANS ce service worker (scope /Sport-Veille/)
+// pour que l'abonnement couvre bien la page — requis notamment par iOS.
+importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+
 /* Service worker : "réseau d'abord" pour tout (toujours la dernière version
    quand il y a du réseau), avec le cache comme secours hors-ligne. */
-const CACHE = "sport-veille-v22";
+const CACHE = "sport-veille-v23";
 const SHELL = [
   "./",
   "./index.html",

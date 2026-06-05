@@ -43,7 +43,7 @@ API_URL = "https://onesignal.com/api/v1/notifications"
 def send(body):
     payload = {
         "app_id": APP_ID,
-        "included_segments": ["Subscribed Users"],
+        "included_segments": ["Total Subscriptions"],
         "headings": {"en": NOTIF_TITLE, "fr": NOTIF_TITLE},
         "contents": {"en": body, "fr": body},
         "url": "https://ultiimatte.github.io/Sport-Veille/",

@@ -373,6 +373,7 @@ async function loadCache() {
 async function enrichArticles(items) {
   const cache = await loadCache();
   let cached = 0, full = 0, partial = 0, aiOk = 0, aiFail = 0;
+  let aiEnabled = !!GEMINI_KEY; // coupe-circuit : passe a false des qu'on touche le quota (429)
   for (const it of items) {
     if (cache[it.url]) { it.summary = cache[it.url].summary; it.detail = cache[it.url].detail; cached++; continue; }
     const rss = it.summary || "";
@@ -382,11 +383,20 @@ async function enrichArticles(items) {
     if (text.length >= FULL_ACCESS_MIN) {
       it.detail = text;                 // tout le texte dans la page detail
       full++;
-      if (GEMINI_KEY) {
+      if (aiEnabled) {
         try { it.summary = await aiSummarize5(text); aiOk++; await sleep(AI_THROTTLE_MS); }
-        catch (e) { it.summary = truncate(rss || text); aiFail++; console.warn(`  ⚠️ IA: ${e.message}`); }
+        catch (e) {
+          it.summary = truncate(rss || text); aiFail++;
+          console.warn(`  ⚠️ IA: ${e.message}`);
+          // Quota epuise (429) ou trop d'appels : inutile de continuer a essayer
+          // l'IA pour le reste du run -> on bascule sur les resumes courts.
+          if (/HTTP 429/.test(e.message)) {
+            aiEnabled = false;
+            console.warn("  ⚠️ Quota IA atteint → résumés courts pour le reste de ce run.");
+          }
+        }
       } else {
-        it.summary = truncate(rss || text); // pas de cle -> on garde un extrait court
+        it.summary = truncate(rss || text); // pas d'IA -> on garde un extrait court
       }
     } else {
       it.detail = text.length > rss.length ? text : rss; // le peu qu'on a

@@ -34,10 +34,11 @@ export const categories = [
         "brestois", "nantes", "strasbourg", "toulouse", "reims", "montpellier", "auxerre",
         "real madrid", "barca", "barcelone", "manchester", "liverpool", "arsenal", "chelsea", "bayern", "city",
         "premier league", "liga", "serie a", "bundesliga", "mercato", "transfert", "buteur", "gardien",
-        "selectionneur", "fifa", "uefa", "ballon d'or", "attaquant", "milieu", "defenseur", "penalty"] },
+        "selectionneur", "fifa", "uefa", "ballon d'or", "attaquant", "milieu", "defenseur", "penalty",
+        "coupe de france", "mhsc", "saint-etienne"] },
       { id: "basket",     label: "Basketball",        emoji: "🏀", keywords: ["basket", "basketball", "nba", "euroleague", "betclic elite", "lebron", "wembanyama", "dunk", "playoffs nba", "asvel", "monaco basket"] },
       { id: "tennis",     label: "Tennis",            emoji: "🎾", keywords: ["tennis", "roland-garros", "roland garros", "wimbledon", "us open", "open d'australie", "atp", "wta", "djokovic", "alcaraz", "sinner", "swiatek", "sabalenka", "parry"] },
-      { id: "rugby",      label: "Rugby",             emoji: "🏉", keywords: ["rugby", "xv de france", "top 14", "pro d2", "six nations", "stade toulousain", "stade francais", "racing 92", "la rochelle", "mêlée"] },
+      { id: "rugby",      label: "Rugby",             emoji: "🏉", keywords: ["rugby", "xv de france", "top 14", "pro d2", "six nations", "stade toulousain", "stade francais", "racing 92", "la rochelle", "melee", "champions cup", "challenge cup", "lnr", "section paloise", "stade rochelais"] },
       { id: "f1",         label: "Formule 1",         emoji: "🏎️", keywords: ["formule 1", "f1", "verstappen", "hamilton", "leclerc", "ferrari", "mclaren", "mercedes", "red bull", "pole position", "grille de depart", "paddock", "monoplace"] },
       { id: "cyclisme",   label: "Cyclisme",          emoji: "🚴", keywords: ["cyclisme", "tour de france", "vuelta", "giro", "pogacar", "vingegaard", "maillot jaune", "peloton", "contre-la-montre", "velo"] },
       { id: "athletisme", label: "Athletisme",        emoji: "🏃", keywords: ["athletisme", "marathon", "sprint", "saut", "perche", "diamond league", "championnats du monde d'athletisme", "100 metres", "relais"] },
@@ -47,7 +48,7 @@ export const categories = [
       { id: "combat",     label: "Sports de combat",  emoji: "🥊", keywords: ["mma", "ufc", "boxe", "boxeur", "judo", "karate", "lutte", "taekwondo", "knockout", "octogone", "ring", "combat"] },
       { id: "esport",     label: "Esports",           emoji: "🎮", keywords: ["esport", "e-sport", "league of legends", "valorant", "counter-strike", "cs2", "dota", "rocket league", "karmine corp"] },
       { id: "jo",         label: "Jeux Olympiques",   emoji: "🏅", keywords: ["jeux olympiques", "olympique", "olympiques", "cio", "paralympique", "paralympiques", "flamme olympique"] },
-      { id: "autre",      label: "Autres sports",     emoji: "🏆", keywords: ["golf", "ski", "biathlon", "voile", "equitation", "escrime", "aviron", "surf", "skateboard", "patinage"] },
+      { id: "autre",      label: "Autres sports",     emoji: "🏆", keywords: ["golf", "ski", "biathlon", "voile", "equitation", "escrime", "aviron", "surf", "skateboard", "patinage", "hippisme", "hippique", "cso", "jumping", "dressage", "gymnastique", "badminton", "trail", "triathlon", "pelote", "petanque", "tir a l'arc", "escalade", "swimrun", "auto-cross", "enduro", "motocross"] },
     ],
     // ---- Flux RSS -----------------------------------------------------------
     //  Le script tolere les flux indisponibles : il les ignore et continue.

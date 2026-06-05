@@ -296,6 +296,7 @@ async function callGemini(prompt) {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.3, maxOutputTokens: 450 },
     }),
+    signal: AbortSignal.timeout(20000), // ne jamais rester bloque sur un appel IA
   });
   if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
   const data = await res.json();

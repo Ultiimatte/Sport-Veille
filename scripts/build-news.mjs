@@ -246,7 +246,7 @@ function dedupe(items) {
 //  Mise en cache par URL (news.json precedent) pour ne pas tout refaire.
 // ---------------------------------------------------------------------------
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash-lite"; // 2.0-flash a un quota gratuit a 0 ; 2.5-flash-lite est gratuit et suffisant pour des resumes
 const AI_THROTTLE_MS = 4500; // ~13 req/min, sous la limite gratuite (15/min)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

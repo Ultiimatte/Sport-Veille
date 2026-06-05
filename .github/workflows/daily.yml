@@ -2,12 +2,9 @@ name: Récap sportif quotidien
 
 # Génère le récapitulatif chaque nuit, AVANT 9h (Paris), puis le publie.
 on:
-  schedule:
-    # Filet de secours (le déclencheur principal est cron-job.org à 6h30 Paris).
-    # Heures UTC, placées avant 7h Paris. Été (UTC+2) : 05:30 / 06:00 / 06:30 Paris.
-    - cron: "30 3 * * *"
-    - cron: "0 4 * * *"
-    - cron: "30 4 * * *"
+  # Déclenchement matinal assuré par cron-job.org (7h30 Paris) via l'API
+  # workflow_dispatch. Les crons internes de GitHub ont été retirés car peu
+  # fiables (déclenchements très en retard). Lancement manuel toujours possible.
   workflow_dispatch: # lancement manuel depuis GitHub
     inputs:
       message:
@@ -17,6 +14,13 @@ on:
 
 permissions:
   contents: write
+
+# Un seul run à la fois : si plusieurs se déclenchent (ex : crons GitHub en
+# retard qui se cumulent), ils s'exécutent l'un après l'autre au lieu de se
+# chevaucher → évite les collisions de "git push".
+concurrency:
+  group: sportveille-daily
+  cancel-in-progress: false
 
 jobs:
   build:

@@ -56,7 +56,7 @@ function buildSummary(item) {
   const raw =
     item.contentSnippet ||
     stripHtml(item.contentEncoded || item.content || item.summary || "");
-  const text = raw.replace(/\s+/g, " ").trim();
+  const text = decodeEntities(raw).replace(/\s+/g, " ").trim();
   if (text.length <= settings.summaryMaxChars) return text;
   const cut = text.slice(0, settings.summaryMaxChars);
   const lastSpace = cut.lastIndexOf(" ");
@@ -251,14 +251,40 @@ const AI_THROTTLE_MS = 4500; // ~13 req/min, sous la limite gratuite (15/min)
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Decode les entites HTML courantes (+ numeriques). */
+/** Table des entites HTML nommees les plus courantes (accents FR + ponctuation). */
+const HTML_ENTITIES = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+  laquo: "«", raquo: "»", hellip: "…", mdash: "—", ndash: "–",
+  rsquo: "'", lsquo: "'", rdquo: "”", ldquo: "“", sbquo: "‚", bdquo: "„",
+  deg: "°", euro: "€", pound: "£", cent: "¢", copy: "©", reg: "®", trade: "™",
+  times: "×", divide: "÷", middot: "·", bull: "•", dagger: "†", sect: "§", para: "¶",
+  frac12: "½", frac14: "¼", frac34: "¾", micro: "µ", szlig: "ß",
+  agrave: "à", aacute: "á", acirc: "â", atilde: "ã", auml: "ä", aring: "å",
+  egrave: "è", eacute: "é", ecirc: "ê", euml: "ë",
+  igrave: "ì", iacute: "í", icirc: "î", iuml: "ï",
+  ograve: "ò", oacute: "ó", ocirc: "ô", otilde: "õ", ouml: "ö", oslash: "ø",
+  ugrave: "ù", uacute: "ú", ucirc: "û", uuml: "ü",
+  ccedil: "ç", ntilde: "ñ", yacute: "ý", yuml: "ÿ",
+  aelig: "æ", oelig: "œ",
+  Agrave: "À", Aacute: "Á", Acirc: "Â", Atilde: "Ã", Auml: "Ä", Aring: "Å",
+  Egrave: "È", Eacute: "É", Ecirc: "Ê", Euml: "Ë",
+  Igrave: "Ì", Iacute: "Í", Icirc: "Î", Iuml: "Ï",
+  Ograve: "Ò", Oacute: "Ó", Ocirc: "Ô", Otilde: "Õ", Ouml: "Ö", Oslash: "Ø",
+  Ugrave: "Ù", Uacute: "Ú", Ucirc: "Û", Uuml: "Ü",
+  Ccedil: "Ç", Ntilde: "Ñ", AElig: "Æ", OElig: "Œ",
+};
+
+/** Decode les entites HTML (numeriques + nommees). 2 passes -> gere le double-encodage. */
 function decodeEntities(s = "") {
-  return s
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
-    .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
-    .replace(/&apos;|&#39;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
-    .replace(/&laquo;/gi, "«").replace(/&raquo;/gi, "»").replace(/&hellip;/gi, "…");
+  let out = String(s);
+  for (let pass = 0; pass < 2 && out.includes("&"); pass++) {
+    out = out
+      .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+      .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+      .replace(/&([A-Za-z][A-Za-z0-9]*);/g, (m, name) =>
+        Object.prototype.hasOwnProperty.call(HTML_ENTITIES, name) ? HTML_ENTITIES[name] : m);
+  }
+  return out;
 }
 
 /** Telecharge la page de l'article et en extrait le texte principal. */
@@ -375,7 +401,13 @@ async function enrichArticles(items) {
   let cached = 0, full = 0, partial = 0, aiOk = 0, aiFail = 0;
   let aiEnabled = !!GEMINI_KEY; // coupe-circuit : passe a false des qu'on touche le quota (429)
   for (const it of items) {
-    if (cache[it.url]) { it.summary = cache[it.url].summary; it.detail = cache[it.url].detail; cached++; continue; }
+    if (cache[it.url]) {
+      // decodeEntities est idempotent : nettoie les anciens caracteres casses (&eacute; ...)
+      // des articles deja en cache, sans avoir besoin de retelecharger la page.
+      it.summary = decodeEntities(cache[it.url].summary || "");
+      it.detail = decodeEntities(cache[it.url].detail || "");
+      cached++; continue;
+    }
     const rss = it.summary || "";
     let text = "";
     try { text = await fetchArticleText(it.url); } catch { /* ignore */ }

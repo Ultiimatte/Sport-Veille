@@ -26,6 +26,14 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Message affiche uniquement quand le telephone est en paysage (iOS ignore le verrou du manifeste) -->
+  <div id="rotateNotice" aria-hidden="true">
+    <div class="rotate-inner">
+      <span class="rotate-emoji">📱</span>
+      <p>Pivote ton téléphone<br />en mode portrait</p>
+    </div>
+  </div>
+
   <header class="app-header" id="appHeader">
     <div class="topbar">
       <div class="topbar__left">

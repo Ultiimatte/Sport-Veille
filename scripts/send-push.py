@@ -60,10 +60,15 @@ def send(body):
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             resp = json.loads(r.read().decode("utf-8"))
+        nid = resp.get("id") or ""
         recipients = resp.get("recipients", 0)
-        if resp.get("errors"):
-            print("Réponse OneSignal avec erreurs :", resp.get("errors"))
-        print(f"Notification envoyée à {recipients} abonné(s) : {body}")
+        errors = resp.get("errors")
+        # Un vrai échec = erreurs ET aucun destinataire (ex : segment introuvable).
+        if errors and not recipients:
+            print("Echec OneSignal :", errors)
+            return False
+        # NB : OneSignal renvoie parfois recipients=0 alors que la notif part bien.
+        print(f"Notification envoyée à OneSignal (id={nid}, ~{recipients} destinataire(s)) : {body}")
         return True
     except urllib.error.HTTPError as e:
         print(f"Echec OneSignal HTTP {e.code} :", e.read().decode("utf-8")[:300])

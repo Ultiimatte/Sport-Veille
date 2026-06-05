@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-# Envoie la notification push du matin (alternance aleatoire des textes/emojis).
+# Envoie la notification push du matin via OneSignal (alternance aleatoire des
+# textes/emojis). OneSignal stocke lui-meme tous les abonnes : on envoie donc a
+# tous les utilisateurs abonnes, sans gerer d'abonnement a la main.
 # Anti-doublon : une seule notif par "edition" (fichier marqueur .last-notified).
-# Mode TEST : si la variable TEST_MESSAGE est fournie, envoie ce texte tout de
-#   suite (+ emoji aleatoire), sans toucher au marqueur du matin.
-# Les identifiants viennent des secrets GitHub (env). Sans secrets -> on ignore.
-import os, sys, json, random
+# Mode TEST : si TEST_MESSAGE est fourni, envoie ce texte tout de suite (+ emoji
+#   aleatoire), sans toucher au marqueur du matin.
+# Identifiants via env (secrets GitHub). Sans eux -> on ignore proprement.
+import os, sys, json, random, urllib.request, urllib.error
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "docs", "data")
@@ -26,38 +28,53 @@ TEXTS = [
 # Emojis ajoutés au hasard à la fin du texte (indépendamment du texte choisi).
 EMOJIS = ["📣", "🏟️", "⚽", "🏀", "🎾", "🏉", "🏎️", "📰", "⏱️", "🔥", "📲"]
 
-sub = os.environ.get("PUSH_SUBSCRIPTION", "").strip()
-priv = os.environ.get("VAPID_PRIVATE_KEY", "").strip()
-subject = os.environ.get("VAPID_SUBJECT", "mailto:sportveille@example.com").strip()
+APP_ID = os.environ.get("ONESIGNAL_APP_ID", "").strip()
+API_KEY = os.environ.get("ONESIGNAL_REST_API_KEY", "").strip()
 test_msg = os.environ.get("TEST_MESSAGE", "").strip()
 
-if not sub or not priv:
-    print("Secrets push absents (PUSH_SUBSCRIPTION / VAPID_PRIVATE_KEY) -> envoi ignoré.")
+if not APP_ID or not API_KEY:
+    print("Secrets OneSignal absents (ONESIGNAL_APP_ID / ONESIGNAL_REST_API_KEY) -> envoi ignoré.")
     sys.exit(0)
 
-from pywebpush import webpush, WebPushException
-from py_vapid import Vapid01
-
-
 NOTIF_TITLE = "SportVeille"
+API_URL = "https://onesignal.com/api/v1/notifications"
+
 
 def send(body):
-    webpush(
-        subscription_info=json.loads(sub),
-        data=json.dumps({"title": NOTIF_TITLE, "body": body}),
-        vapid_private_key=Vapid01.from_raw(private_raw=priv.encode()),
-        vapid_claims={"sub": subject},
+    payload = {
+        "app_id": APP_ID,
+        "included_segments": ["Subscribed Users"],
+        "headings": {"en": NOTIF_TITLE, "fr": NOTIF_TITLE},
+        "contents": {"en": body, "fr": body},
+        "url": "https://ultiimatte.github.io/Sport-Veille/",
+    }
+    req = urllib.request.Request(
+        API_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": "Basic " + API_KEY,
+        },
+        method="POST",
     )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            resp = json.loads(r.read().decode("utf-8"))
+        recipients = resp.get("recipients", 0)
+        if resp.get("errors"):
+            print("Réponse OneSignal avec erreurs :", resp.get("errors"))
+        print(f"Notification envoyée à {recipients} abonné(s) : {body}")
+        return True
+    except urllib.error.HTTPError as e:
+        print(f"Echec OneSignal HTTP {e.code} :", e.read().decode("utf-8")[:300])
+    except Exception as e:
+        print("Echec de l'envoi OneSignal :", repr(e))
+    return False
 
 
 # --- Mode TEST : texte forcé, envoi immédiat, sans anti-doublon ---
 if test_msg:
-    try:
-        body = f"{test_msg} {random.choice(EMOJIS)}"
-        send(body)
-        print("Notification de TEST envoyée :", body)
-    except WebPushException as e:
-        print("Echec du test :", repr(e))
+    send(f"{test_msg} {random.choice(EMOJIS)}")
     sys.exit(0)
 
 # --- Envoi normal du matin (anti-doublon par édition) ---
@@ -71,10 +88,6 @@ if edition and edition == last:
     print(f"Déjà notifié pour l'édition {edition} -> rien à envoyer.")
     sys.exit(0)
 
-try:
-    send(f"{random.choice(TEXTS)} {random.choice(EMOJIS)}")
+if send(f"{random.choice(TEXTS)} {random.choice(EMOJIS)}"):
     open(MARKER, "w").write(edition)
-    print(f"Notification envoyée pour l'édition {edition}.")
-except WebPushException as e:
-    print("Echec de l'envoi push :", repr(e))
-    sys.exit(0)
+    print(f"Marqueur mis à jour pour l'édition {edition}.")

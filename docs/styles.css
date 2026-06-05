@@ -2,35 +2,6 @@
    Sport Veille — feuille de style (épuré, palette crème, logo serif)
    ========================================================================= */
 
-/* Verrou portrait : message affiche seulement sur telephone en paysage. */
-#rotateNotice { display: none; }
-@media (orientation: landscape) and (max-height: 600px) {
-  #rotateNotice {
-    display: flex;
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    background: var(--bg);
-    color: var(--text);
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-  }
-  #rotateNotice .rotate-emoji {
-    display: block;
-    font-size: 3rem;
-    transform: rotate(90deg);
-    margin-bottom: 14px;
-  }
-  #rotateNotice p {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-    line-height: 1.4;
-  }
-}
-
 :root {
   --bg: #f9f9f7;            /* arrière-plan de l'app */
   --surface: #ffffff;       /* cartes d'actualité */

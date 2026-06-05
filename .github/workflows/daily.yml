@@ -39,15 +39,12 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build
 
-      - name: Notification du matin (push)
+      - name: Notification du matin (push via OneSignal)
         env:
-          PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          ONESIGNAL_APP_ID: "62991026-15c3-4c0b-87e6-9761f09f8cfc"
+          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
           TEST_MESSAGE: ${{ github.event.inputs.message }}
-        run: |
-          pip install --quiet pywebpush
-          python3 scripts/send-push.py
+        run: python3 scripts/send-push.py
 
       - name: Publier les nouvelles données
         run: |

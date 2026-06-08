@@ -156,7 +156,7 @@ body {
 .chip .emoji { font-size: 0.92rem; }
 
 /* ---------- Contenu ---------- */
-.content { padding: 16px 18px 28px; max-width: 720px; margin: 0 auto; }
+.content { padding: 16px 18px 28px; max-width: 720px; margin: 0 auto; overflow-x: hidden; }
 .loader { text-align: center; color: var(--text-soft); padding: 48px 0; }
 .list-meta { color: var(--text-soft); font-size: 0.82rem; margin: 2px 4px 16px; font-weight: 500; }
 
@@ -222,15 +222,21 @@ body {
 
 /* ---------- États vides ---------- */
 .empty { text-align: center; color: var(--text-soft); padding: 54px 20px; }
-/* Crédit discret, ancré tout en bas de la page Réglages (police serif italique). */
-body.is-settings .content { display: flex; flex-direction: column; min-height: calc(100dvh - 130px); padding-top: 4px; }
+/* Crédit discret, juste sous les boutons des Réglages (police serif italique). */
 .settings-credit {
-  margin-top: auto;
   text-align: center;
   font-family: var(--serif); font-style: italic;
   font-size: 0.72rem; color: var(--text-soft); opacity: 0.55;
-  padding: 34px 0 4px;
+  margin: 22px 0 4px;
 }
+
+/* Animation de retour : la page article glisse vers la droite (style iOS). */
+@keyframes sv-slide-out-right {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(100%); opacity: 0; }
+}
+.article--leaving { animation: sv-slide-out-right 0.26s ease forwards; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .article--leaving { animation: none; } }
 .empty__emoji { font-size: 2.6rem; display: block; margin-bottom: 12px; }
 
 /* ---------- Historique ---------- */

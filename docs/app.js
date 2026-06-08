@@ -246,7 +246,6 @@ function renderArticle(item) {
 async function render(opts = {}) {
   const content = document.getElementById("content");
   document.body.classList.toggle("is-article", state.view === "article");
-  document.body.classList.toggle("is-settings", state.view === "settings");
   renderFilters();
   if (state.view === "today") content.innerHTML = renderToday();
   else if (state.view === "history") { content.innerHTML = `<div class="loader">…</div>`; content.innerHTML = await renderHistory(); }
@@ -298,10 +297,21 @@ function openDetail(item) {
   render();
 }
 function goBackFromArticle() {
-  state.view = state.returnView || "today";
-  setActiveTab(state.view);
-  render({ keepScroll: true });
-  requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
+  const finish = () => {
+    state.view = state.returnView || "today";
+    setActiveTab(state.view);
+    render({ keepScroll: true });
+    requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
+  };
+  const art = document.querySelector(".article");
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!art || reduce) { finish(); return; }
+  // La page article glisse vers la droite, puis on affiche la liste.
+  art.classList.add("article--leaving");
+  let done = false;
+  const go = () => { if (done) return; done = true; finish(); };
+  art.addEventListener("animationend", go, { once: true });
+  setTimeout(go, 320); // filet de sécurité si animationend ne se déclenche pas
 }
 
 /* Geste : glissement vers la droite (depuis la moitié gauche de l'écran) = retour,

@@ -246,6 +246,7 @@ function renderArticle(item) {
 async function render(opts = {}) {
   const content = document.getElementById("content");
   document.body.classList.toggle("is-article", state.view === "article");
+  document.body.classList.toggle("is-settings", state.view === "settings");
   renderFilters();
   if (state.view === "today") content.innerHTML = renderToday();
   else if (state.view === "history") { content.innerHTML = `<div class="loader">…</div>`; content.innerHTML = await renderHistory(); }

@@ -81,7 +81,7 @@ body {
 
 .logo {
   font-family: var(--serif);
-  font-size: 1.45rem;
+  font-size: 1.62rem;
   line-height: 1;
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -140,6 +140,9 @@ body {
   scrollbar-width: none;
 }
 .filters::-webkit-scrollbar { display: none; }
+/* Hors "Aujourd'hui" la barre de filtres est vide : on supprime son espace
+   pour que l'en-tête soit plus compact et bien centré. */
+.filters:empty { margin-top: 0; }
 .chip {
   flex: 0 0 auto;
   display: inline-flex; align-items: center; gap: 6px;
@@ -161,7 +164,7 @@ body {
   font-family: var(--serif);
   display: flex; align-items: baseline; gap: 10px;
   font-size: 1.5rem; font-weight: 800;
-  margin: 26px 4px 14px;
+  margin: 14px 4px 14px;
 }
 .section-title .count { font-family: var(--sans); color: var(--text-soft); font-weight: 600; font-size: 0.85rem; }
 
@@ -219,7 +222,15 @@ body {
 
 /* ---------- États vides ---------- */
 .empty { text-align: center; color: var(--text-soft); padding: 54px 20px; }
-.settings-credit { text-align: center; color: var(--text-soft); font-size: 0.78rem; margin: 26px 0 8px; }
+/* Crédit discret, ancré tout en bas de la page Réglages (police serif italique). */
+body.is-settings .content { display: flex; flex-direction: column; min-height: calc(100dvh - 240px); }
+.settings-credit {
+  margin-top: auto;
+  text-align: center;
+  font-family: var(--serif); font-style: italic;
+  font-size: 0.72rem; color: var(--text-soft); opacity: 0.55;
+  padding: 34px 0 4px;
+}
 .empty__emoji { font-size: 2.6rem; display: block; margin-bottom: 12px; }
 
 /* ---------- Historique ---------- */

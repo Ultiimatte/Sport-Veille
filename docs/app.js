@@ -210,7 +210,8 @@ function renderSettings() {
       <button class="read-btn" id="enable-notif">Activer</button>
     </div>
     <button class="btn-block" id="mark-all" style="margin-top:12px;">✓ Tout marquer comme lu</button>
-    <button class="btn-block" id="clear-read" style="margin-top:10px;">↺ Réinitialiser les "lus"</button>`;
+    <button class="btn-block" id="clear-read" style="margin-top:10px;">↺ Réinitialiser les "lus"</button>
+    <p class="settings-credit">Une création de c moi, codée avec Claude Code</p>`;
 }
 
 /* ---------- Vue détail d'un article (in-app) ---------- */
@@ -301,6 +302,31 @@ function goBackFromArticle() {
   render({ keepScroll: true });
   requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
 }
+
+/* Geste iOS : glissement depuis le bord gauche vers la droite = retour,
+   uniquement quand on est sur la page détail d'un article. */
+(function setupEdgeSwipeBack() {
+  let startX = 0, startY = 0, tracking = false;
+  const EDGE = 40;     // zone de départ depuis le bord gauche (px)
+  const DIST = 70;     // distance horizontale minimale du glissement
+  const VERT_MAX = 45; // tolérance verticale (sinon c'est un défilement)
+  document.addEventListener("touchstart", (e) => {
+    if (state.view !== "article" || !e.touches[0]) { tracking = false; return; }
+    const t = e.touches[0];
+    tracking = t.clientX <= EDGE;
+    startX = t.clientX; startY = t.clientY;
+  }, { passive: true });
+  document.addEventListener("touchend", (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    if (!t) return;
+    const dx = t.clientX - startX, dy = t.clientY - startY;
+    if (dx > DIST && Math.abs(dy) < VERT_MAX && state.view === "article") {
+      goBackFromArticle();
+    }
+  }, { passive: true });
+})();
 
 function bindHistory() {
   document.querySelectorAll("[data-history]").forEach((el) => {

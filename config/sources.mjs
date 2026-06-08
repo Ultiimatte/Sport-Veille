@@ -28,7 +28,7 @@ export const categories = [
     // ---- Rubriques (sports) -------------------------------------------------
     topics: [
       { id: "football",   label: "Football",          emoji: "⚽", keywords: [
-        "football", "foot", "ligue 1", "ligue 2", "ligue des champions", "ligue europa", "champions league",
+        "football", "foot", "ligue 1", "ligue 2", "ligue europa",
         "coupe du monde", "mondial", "euro", "equipe de france", "les bleus", "deschamps", "mbappe", "mbappé",
         "psg", "paris saint-germain", "marseille", "lyon", "monaco", "lille", "lens", "rennes", "nice", "brest",
         "brestois", "nantes", "strasbourg", "toulouse", "reims", "montpellier", "auxerre",
@@ -43,7 +43,7 @@ export const categories = [
       { id: "cyclisme",   label: "Cyclisme",          emoji: "🚴", keywords: ["cyclisme", "tour de france", "vuelta", "giro", "pogacar", "vingegaard", "maillot jaune", "peloton", "contre-la-montre", "velo"] },
       { id: "athletisme", label: "Athletisme",        emoji: "🏃", keywords: ["athletisme", "marathon", "sprint", "saut", "perche", "diamond league", "championnats du monde d'athletisme", "100 metres", "relais"] },
       { id: "natation",   label: "Natation",          emoji: "🏊", keywords: ["natation", "nageur", "nageuse", "bassin", "marchand", "papillon", "brasse", "crawl"] },
-      { id: "handball",   label: "Handball",          emoji: "🤾", keywords: ["handball", "starligue", "lidl starligue", "ehf", "championnat du monde de handball"] },
+      { id: "handball",   label: "Handball",          emoji: "🤾", keywords: ["handball", "starligue", "lidl starligue", "liqui moly starligue", "proligue", "ehf", "championnat du monde de handball", "mhb", "usam", "hbc", "montpellier handball"] },
       { id: "volley",     label: "Volleyball",        emoji: "🏐", keywords: ["volley", "volleyball", "ligue des nations de volley", "beach-volley"] },
       { id: "combat",     label: "Sports de combat",  emoji: "🥊", keywords: ["mma", "ufc", "boxe", "boxeur", "judo", "karate", "lutte", "taekwondo", "knockout", "octogone", "ring", "combat"] },
       { id: "esport",     label: "Esports",           emoji: "🎮", keywords: ["esport", "e-sport", "league of legends", "valorant", "counter-strike", "cs2", "dota", "rocket league", "karmine corp"] },

@@ -219,6 +219,7 @@ body {
 
 /* ---------- États vides ---------- */
 .empty { text-align: center; color: var(--text-soft); padding: 54px 20px; }
+.settings-credit { text-align: center; color: var(--text-soft); font-size: 0.78rem; margin: 26px 0 8px; }
 .empty__emoji { font-size: 2.6rem; display: block; margin-bottom: 12px; }
 
 /* ---------- Historique ---------- */
@@ -364,7 +365,8 @@ body.is-article { padding-bottom: 0; }
   font-size: 1.02rem; line-height: 1.6; color: var(--text);
   margin: 0 0 1.5em;                 /* espace généreux entre paragraphes */
   text-align: justify;
-  hyphens: auto; -webkit-hyphens: auto;
+  hyphens: manual; -webkit-hyphens: manual;  /* pas de césure auto : le mot entier passe à la ligne */
+  overflow-wrap: normal; word-break: normal;
 }
 .article__para:last-child { margin-bottom: 18px; }
 .article__ai-note {

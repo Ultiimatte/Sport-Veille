@@ -111,12 +111,15 @@ function classifyTopic(text, topics) {
   let best = null;
   let bestScore = 0;
   for (const t of topics) {
+    const idn = normalize(t.id);
+    const labn = normalize(t.label);
     let score = 0;
     for (const kw of t.keywords || []) {
       const k = normalize(kw);
       if (!k) continue;
       const hit = k.includes(" ") ? hay.includes(k) : tokens.has(k);
-      if (hit) score++;
+      // Le NOM du sport (son id ou son label) est un signal fort -> poids 3.
+      if (hit) score += (k === idn || k === labn) ? 3 : 1;
     }
     if (score > bestScore) {
       bestScore = score;

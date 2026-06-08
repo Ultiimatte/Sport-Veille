@@ -1,6 +1,6 @@
 {
-  "name": "Sport Veille",
-  "short_name": "Sport Veille",
+  "name": "SportVeille",
+  "short_name": "SportVeille",
   "description": "Votre récapitulatif quotidien de l'actualité sportive.",
   "start_url": "./index.html",
   "scope": "./",

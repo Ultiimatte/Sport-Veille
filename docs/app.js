@@ -204,13 +204,6 @@ function renderSettings() {
     </div>
     <div class="setting">
       <div>
-        <div class="setting__label">Heure du récap</div>
-        <div class="setting__hint">Heure à laquelle vous aimez consulter (préférence)</div>
-      </div>
-      <input type="time" id="set-time" value="${s.notifyTime}" />
-    </div>
-    <div class="setting">
-      <div>
         <div class="setting__label">Notifications du matin</div>
         <div class="setting__hint">Un rappel chaque matin quand le récap est prêt</div>
       </div>
@@ -330,9 +323,6 @@ function bindSettings() {
   const s = getSettings();
   document.getElementById("set-theme")?.addEventListener("change", (e) => {
     saveSettings({ ...s, theme: e.target.value });
-  });
-  document.getElementById("set-time")?.addEventListener("change", (e) => {
-    saveSettings({ ...s, notifyTime: e.target.value });
   });
   document.getElementById("mark-all")?.addEventListener("click", () => {
     const set = getReadIds();

@@ -164,7 +164,7 @@ body {
   font-family: var(--serif);
   display: flex; align-items: baseline; gap: 10px;
   font-size: 1.5rem; font-weight: 800;
-  margin: 6px 4px 14px;
+  margin: 10px 4px 14px;
 }
 .section-title .count { font-family: var(--sans); color: var(--text-soft); font-weight: 600; font-size: 0.85rem; }
 
@@ -223,7 +223,7 @@ body {
 /* ---------- États vides ---------- */
 .empty { text-align: center; color: var(--text-soft); padding: 54px 20px; }
 /* Crédit discret, ancré tout en bas de la page Réglages (police serif italique). */
-body.is-settings .content { display: flex; flex-direction: column; min-height: calc(100dvh - 100px); padding-top: 4px; }
+body.is-settings .content { display: flex; flex-direction: column; min-height: calc(100dvh - 130px); padding-top: 4px; }
 .settings-credit {
   margin-top: auto;
   text-align: center;

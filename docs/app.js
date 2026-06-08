@@ -296,44 +296,78 @@ function openDetail(item) {
   toggleRead(readKey(item), true); // consulté -> marqué lu
   render();
 }
+/* Applique réellement le retour à la liste (changement de vue + rendu). */
+function applyBack() {
+  state.view = state.returnView || "today";
+  setActiveTab(state.view);
+  render({ keepScroll: true });
+  requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
+}
+
+/* Retour via le bouton : petite animation de glissement vers la droite. */
 function goBackFromArticle() {
-  const finish = () => {
-    state.view = state.returnView || "today";
-    setActiveTab(state.view);
-    render({ keepScroll: true });
-    requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
-  };
   const art = document.querySelector(".article");
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!art || reduce) { finish(); return; }
-  // La page article glisse vers la droite, puis on affiche la liste.
+  if (!art || reduce) { applyBack(); return; }
   art.classList.add("article--leaving");
   let done = false;
-  const go = () => { if (done) return; done = true; finish(); };
+  const go = () => { if (done) return; done = true; applyBack(); };
   art.addEventListener("animationend", go, { once: true });
   setTimeout(go, 320); // filet de sécurité si animationend ne se déclenche pas
 }
 
-/* Geste : glissement vers la droite (depuis la moitié gauche de l'écran) = retour,
-   uniquement sur la page détail d'un article. Volontairement tolérant pour iOS. */
-(function setupSwipeBack() {
-  let x0 = 0, y0 = 0, t0 = 0, active = false;
+/* Geste retour INTERACTIF (style iOS) : la page article suit le doigt ;
+   relâchée assez loin -> retour, sinon elle revient en place. */
+(function setupInteractiveSwipeBack() {
+  let art = null, x0 = 0, y0 = 0, width = 1, dragging = false, decided = false;
+  const reset = () => { art = null; dragging = false; decided = false; };
+
   document.addEventListener("touchstart", (e) => {
+    if (state.view !== "article") return reset();
     const t = e.touches && e.touches[0];
-    if (state.view !== "article" || !t) { active = false; return; }
-    x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); active = true;
+    if (!t || t.clientX > window.innerWidth * 0.5) return reset(); // doit démarrer dans la moitié gauche
+    art = document.querySelector(".article");
+    if (!art) return reset();
+    x0 = t.clientX; y0 = t.clientY; width = window.innerWidth || 1;
+    dragging = false; decided = false;
   }, { passive: true });
-  document.addEventListener("touchend", (e) => {
-    if (!active) return;
-    active = false;
-    const t = e.changedTouches && e.changedTouches[0];
-    if (!t || state.view !== "article") return;
-    const dx = t.clientX - x0, dy = t.clientY - y0, dt = Date.now() - t0;
-    // Départ moitié gauche, glissement net vers la droite, horizontal et rapide.
-    if (x0 < window.innerWidth * 0.5 && dx > 80 && Math.abs(dy) < 60 && dx > Math.abs(dy) * 1.5 && dt < 900) {
-      goBackFromArticle();
+
+  document.addEventListener("touchmove", (e) => {
+    if (!art) return;
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if (!decided) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      // Vers la droite et horizontal -> on prend la main ; sinon on laisse défiler.
+      if (dx > 0 && Math.abs(dx) > Math.abs(dy)) { decided = true; dragging = true; art.style.transition = "none"; }
+      else { reset(); return; }
     }
-  }, { passive: true });
+    if (dragging) {
+      e.preventDefault(); // empêche le défilement vertical pendant le glissement
+      art.style.transform = "translateX(" + Math.max(0, dx) + "px)";
+    }
+  }, { passive: false });
+
+  const onEnd = (e) => {
+    if (!art || !dragging) return reset();
+    const t = e.changedTouches && e.changedTouches[0];
+    const dx = t ? t.clientX - x0 : 0;
+    const a = art; reset();
+    a.style.transition = "transform 0.2s ease";
+    if (dx > width * 0.33) {
+      a.style.transform = "translateX(100%)"; // assez loin -> on termine le retour
+      let done = false;
+      const go = () => { if (done) return; done = true; applyBack(); };
+      a.addEventListener("transitionend", go, { once: true });
+      setTimeout(go, 260);
+    } else {
+      a.style.transform = "translateX(0)"; // pas assez loin -> revient en place
+      a.addEventListener("transitionend", () => { a.style.transition = ""; a.style.transform = ""; }, { once: true });
+    }
+  };
+  document.addEventListener("touchend", onEnd, { passive: true });
+  document.addEventListener("touchcancel", onEnd, { passive: true });
 })();
 
 function bindHistory() {

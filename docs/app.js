@@ -304,26 +304,23 @@ function goBackFromArticle() {
   requestAnimationFrame(() => window.scrollTo(0, state.returnScroll || 0));
 }
 
-/* Geste iOS : glissement depuis le bord gauche vers la droite = retour,
-   uniquement quand on est sur la page détail d'un article. */
-(function setupEdgeSwipeBack() {
-  let startX = 0, startY = 0, tracking = false;
-  const EDGE = 40;     // zone de départ depuis le bord gauche (px)
-  const DIST = 70;     // distance horizontale minimale du glissement
-  const VERT_MAX = 45; // tolérance verticale (sinon c'est un défilement)
+/* Geste : glissement vers la droite (depuis la moitié gauche de l'écran) = retour,
+   uniquement sur la page détail d'un article. Volontairement tolérant pour iOS. */
+(function setupSwipeBack() {
+  let x0 = 0, y0 = 0, t0 = 0, active = false;
   document.addEventListener("touchstart", (e) => {
-    if (state.view !== "article" || !e.touches[0]) { tracking = false; return; }
-    const t = e.touches[0];
-    tracking = t.clientX <= EDGE;
-    startX = t.clientX; startY = t.clientY;
+    const t = e.touches && e.touches[0];
+    if (state.view !== "article" || !t) { active = false; return; }
+    x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); active = true;
   }, { passive: true });
   document.addEventListener("touchend", (e) => {
-    if (!tracking) return;
-    tracking = false;
-    const t = e.changedTouches[0];
-    if (!t) return;
-    const dx = t.clientX - startX, dy = t.clientY - startY;
-    if (dx > DIST && Math.abs(dy) < VERT_MAX && state.view === "article") {
+    if (!active) return;
+    active = false;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t || state.view !== "article") return;
+    const dx = t.clientX - x0, dy = t.clientY - y0, dt = Date.now() - t0;
+    // Départ moitié gauche, glissement net vers la droite, horizontal et rapide.
+    if (x0 < window.innerWidth * 0.5 && dx > 80 && Math.abs(dy) < 60 && dx > Math.abs(dy) * 1.5 && dt < 900) {
       goBackFromArticle();
     }
   }, { passive: true });

@@ -25,7 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25 # garde-fou : ne jamais rester bloque des heures
+    timeout-minutes: 30 # garde-fou : ne jamais rester bloque des heures
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4

@@ -399,10 +399,30 @@ async function loadCache() {
  *  - Acces PARTIEL (teaser/bloque) -> detail = le peu de texte ; summary = extrait coupe a 5 lignes
  * Le `detail` complet ne necessite PAS d'IA ; l'IA ne sert qu'au resume de liste.
  */
+/** Exécute `fn` sur chaque élément avec au plus `limit` tâches en parallèle. */
+async function mapLimit(arr, limit, fn) {
+  let i = 0;
+  const workers = Array.from({ length: Math.min(limit, arr.length) }, async () => {
+    while (i < arr.length) { const idx = i++; await fn(arr[idx], idx); }
+  });
+  await Promise.all(workers);
+}
+
 async function enrichArticles(items) {
   const cache = await loadCache();
   let cached = 0, full = 0, partial = 0, aiOk = 0, aiFail = 0;
   let aiEnabled = !!GEMINI_KEY; // coupe-circuit : passe a false des qu'on touche le quota (429)
+
+  // 1) Lecture des pages d'articles EN PARALLÈLE (c'est le plus gros du temps) — hors cache.
+  const toFetch = items.filter((it) => !cache[it.url]);
+  const texts = new Map();
+  await mapLimit(toFetch, 6, async (it) => {
+    let t = "";
+    try { t = await fetchArticleText(it.url); } catch { /* ignore */ }
+    texts.set(it.url, t);
+  });
+
+  // 2) Affectation detail/résumé ; appels IA en SÉQUENTIEL (throttle + coupe-circuit).
   for (const it of items) {
     if (cache[it.url]) {
       // decodeEntities est idempotent : nettoie les anciens caracteres casses (&eacute; ...)
@@ -412,8 +432,7 @@ async function enrichArticles(items) {
       cached++; continue;
     }
     const rss = it.summary || "";
-    let text = "";
-    try { text = await fetchArticleText(it.url); } catch { /* ignore */ }
+    const text = texts.get(it.url) || "";
 
     if (text.length >= FULL_ACCESS_MIN) {
       it.detail = text;                 // tout le texte dans la page detail

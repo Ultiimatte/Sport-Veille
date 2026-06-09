@@ -40,7 +40,7 @@ NOTIF_TITLE = "SportVeille"
 API_URL = "https://onesignal.com/api/v1/notifications"
 
 
-def send(body):
+def send(body, send_after=None):
     payload = {
         "app_id": APP_ID,
         "included_segments": ["Total Subscriptions"],
@@ -48,6 +48,8 @@ def send(body):
         "contents": {"en": body, "fr": body},
         "url": "https://ultiimatte.github.io/Sport-Veille/",
     }
+    if send_after:
+        payload["send_after"] = send_after  # livraison programmée (rappels de la journée)
     req = urllib.request.Request(
         API_URL,
         data=json.dumps(payload).encode("utf-8"),
@@ -96,3 +98,21 @@ if edition and edition == last:
 if send(f"{random.choice(TEXTS)} {random.choice(EMOJIS)}"):
     open(MARKER, "w").write(edition)
     print(f"Marqueur mis à jour pour l'édition {edition}.")
+
+    # --- Rappels de lecture à des heures ALÉATOIRES dans la journée (heure de Paris) ---
+    # Programmés une seule fois (avec la notif du matin) via send_after. Mêmes textes/emojis.
+    try:
+        import datetime
+        from zoneinfo import ZoneInfo
+        paris = ZoneInfo("Europe/Paris")
+        now_p = datetime.datetime.now(paris)
+        midnight = now_p.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Deux fenêtres : (12h-16h) puis (16h-20h), heure aléatoire dans chacune.
+        for (lo, hi) in [(12, 16), (16, 20)]:
+            target = midnight + datetime.timedelta(minutes=random.randint(lo * 60, hi * 60 - 1))
+            if target <= now_p:
+                continue  # heure déjà passée (run tardif) -> on saute ce rappel
+            if send(f"{random.choice(TEXTS)} {random.choice(EMOJIS)}", send_after=target.isoformat()):
+                print(f"Rappel programmé à {target.strftime('%H:%M')} (Paris).")
+    except Exception as e:
+        print("Rappels non programmés :", repr(e))

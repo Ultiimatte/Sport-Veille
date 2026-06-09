@@ -145,10 +145,14 @@ function cardHtml(item, readIds) {
 function renderFilters() {
   const el = document.getElementById("filters");
   if (state.view !== "today") { el.innerHTML = ""; return; }
-  const present = new Set((state.data?.items || []).map((i) => i.topic));
+  // Compte les articles par sport puis trie les pastilles du - au + d'articles
+  // (pour découvrir d'autres sports). Les articles, eux, restent récent -> ancien.
+  const counts = {};
+  for (const i of (state.data?.items || [])) counts[i.topic] = (counts[i.topic] || 0) + 1;
+  const present = Object.keys(state.topicsMap).filter((id) => counts[id]);
+  present.sort((a, b) => counts[a] - counts[b]);
   const chips = [`<button class="chip ${state.filter === "all" ? "is-active" : ""}" data-filter="all">Tout</button>`];
-  for (const id of Object.keys(state.topicsMap)) {
-    if (!present.has(id)) continue;
+  for (const id of present) {
     const t = state.topicsMap[id];
     chips.push(`<button class="chip ${state.filter === id ? "is-active" : ""}" data-filter="${id}"><span class="emoji">${t.emoji}</span> ${escapeHtml(t.label)}</button>`);
   }

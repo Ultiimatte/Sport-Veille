@@ -43,14 +43,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build
 
-      - name: Notification du matin (push via OneSignal)
-        env:
-          ONESIGNAL_APP_ID: "62991026-15c3-4c0b-87e6-9761f09f8cfc"
-          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
-          TEST_MESSAGE: ${{ github.event.inputs.message }}
-        run: python3 scripts/send-push.py
-
-      - name: Publier les nouvelles données
+      # On PUBLIE le récap AVANT de notifier : ainsi l'édition du jour est garantie
+      # même si l'étape de notification venait à bloquer ou échouer.
+      - name: Publier le récap (données)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -60,4 +55,26 @@ jobs:
           else
             git commit -m "Récap du $(date -u +%Y-%m-%d)"
             git push
+          fi
+
+      - name: Notification du matin (push via OneSignal)
+        timeout-minutes: 8 # la notif ne peut jamais bloquer le job longtemps
+        env:
+          ONESIGNAL_APP_ID: "62991026-15c3-4c0b-87e6-9761f09f8cfc"
+          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+          TEST_MESSAGE: ${{ github.event.inputs.message }}
+        run: python3 scripts/send-push.py
+
+      # Sauvegarde le marqueur anti-doublon écrit par la notif (même si elle a échoué).
+      - name: Publier le marqueur de notification
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          if git diff --staged --quiet; then
+            echo "Rien à committer."
+          else
+            git commit -m "Marqueur notif du $(date -u +%Y-%m-%d)"
+            git push || echo "Push du marqueur ignoré."
           fi

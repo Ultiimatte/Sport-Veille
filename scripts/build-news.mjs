@@ -295,7 +295,7 @@ async function fetchArticleText(url) {
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; SportVeille/1.0)" },
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(9000),
     });
     if (!res.ok) return "";
     let html = await res.text();
@@ -416,13 +416,16 @@ async function enrichArticles(items) {
   // 1) Lecture des pages d'articles EN PARALLÈLE (c'est le plus gros du temps) — hors cache.
   const toFetch = items.filter((it) => !cache[it.url]);
   const texts = new Map();
-  await mapLimit(toFetch, 6, async (it) => {
+  const tFetch = Date.now();
+  await mapLimit(toFetch, 8, async (it) => {
     let t = "";
     try { t = await fetchArticleText(it.url); } catch { /* ignore */ }
     texts.set(it.url, t);
   });
+  console.log(`⏱️ Lecture des pages : ${toFetch.length} articles en ${Math.round((Date.now() - tFetch) / 1000)}s.`);
 
   // 2) Affectation detail/résumé ; appels IA en SÉQUENTIEL (throttle + coupe-circuit).
+  const tEnrich = Date.now();
   for (const it of items) {
     if (cache[it.url]) {
       // decodeEntities est idempotent : nettoie les anciens caracteres casses (&eacute; ...)
@@ -458,7 +461,7 @@ async function enrichArticles(items) {
       partial++;
     }
   }
-  console.log(`Enrichissement : ${full} entiers, ${partial} partiels, ${cached} repris, IA ${aiOk} ok / ${aiFail} échecs.`);
+  console.log(`Enrichissement : ${full} entiers, ${partial} partiels, ${cached} repris, IA ${aiOk} ok / ${aiFail} échecs. (résumés/IA en ${Math.round((Date.now() - tEnrich) / 1000)}s)`);
 }
 
 // ---------------------------------------------------------------------------
@@ -482,7 +485,7 @@ async function main() {
     all.push(...results.flat());
   }
 
-  console.log(`\nTotal brut : ${all.length} articles`);
+  console.log(`\n⏱️ Lecture des flux RSS : ${Math.round((Date.now() - now) / 1000)}s. Total brut : ${all.length} articles`);
 
   // Fenetre de l'edition : [hier cutoff, aujourd'hui cutoff[ (heure de Paris)
   const win = editionWindow(new Date(now), settings.timeZone, settings.editionCutoff);
@@ -536,7 +539,7 @@ async function main() {
   await writeFile(path.join(HISTORY_DIR, `${dateKey}.json`), JSON.stringify(payload, null, 2));
   await updateHistoryIndex();
 
-  console.log(`\n✅ Genere : ${all.length} articles pour le ${dateKey}`);
+  console.log(`\n✅ Genere : ${all.length} articles pour le ${dateKey} (build total ${Math.round((Date.now() - now) / 1000)}s)`);
 }
 
 /** Met a jour l'index de l'historique ET supprime les jours de plus de 30 jours. */

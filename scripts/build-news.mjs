@@ -399,6 +399,14 @@ async function loadCache() {
  *  - Acces PARTIEL (teaser/bloque) -> detail = le peu de texte ; summary = extrait coupe a 5 lignes
  * Le `detail` complet ne necessite PAS d'IA ; l'IA ne sert qu'au resume de liste.
  */
+/** Borne DURE : si `promise` n'a pas répondu en `ms`, renvoie `fallback` (anti-blocage). */
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 /** Exécute `fn` sur chaque élément avec au plus `limit` tâches en parallèle. */
 async function mapLimit(arr, limit, fn) {
   let i = 0;
@@ -419,7 +427,7 @@ async function enrichArticles(items) {
   const tFetch = Date.now();
   await mapLimit(toFetch, 8, async (it) => {
     let t = "";
-    try { t = await fetchArticleText(it.url); } catch { /* ignore */ }
+    try { t = await withTimeout(fetchArticleText(it.url), 12000, ""); } catch { /* ignore */ }
     texts.set(it.url, t);
   });
   console.log(`⏱️ Lecture des pages : ${toFetch.length} articles en ${Math.round((Date.now() - tFetch) / 1000)}s.`);
@@ -481,7 +489,7 @@ async function main() {
       topics: category.topics.map(({ id, label, emoji }) => ({ id, label, emoji })),
     });
     console.log(`\n📡 Thematique « ${category.label} »`);
-    const results = await Promise.all(category.feeds.map((f) => fetchFeed(f, category)));
+    const results = await Promise.all(category.feeds.map((f) => withTimeout(fetchFeed(f, category), 20000, [])));
     all.push(...results.flat());
   }
 
@@ -569,7 +577,11 @@ async function updateHistoryIndex() {
   await writeFile(path.join(HISTORY_DIR, "index.json"), JSON.stringify(index, null, 2));
 }
 
-main().catch((err) => {
-  console.error("Erreur fatale :", err);
-  process.exit(1);
-});
+main()
+  // Sort IMMÉDIATEMENT : évite que le processus reste "vivant" (et le job bloqué)
+  // à cause d'une connexion réseau suspendue qui ne se referme jamais.
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error("Erreur fatale :", err);
+    process.exit(1);
+  });
